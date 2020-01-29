@@ -1,0 +1,1 @@
+#code to read seshat cvs file containing the rows and columns for 51 social complex caracteristics
