@@ -96,7 +96,7 @@ bac_color =  'white'
 def load_plot_wordclouds(axes, names, colors_names, bac_color):
 
     for ax, n, k, in zip(axes, names, colors_names):
-        height = 200
+        height = 190
         print('nananana', ax, n, k)
         df = pd.read_csv(n, sep=',')
         data = dataframe_to_dic(df)
