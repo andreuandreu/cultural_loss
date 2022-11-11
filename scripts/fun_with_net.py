@@ -85,13 +85,29 @@ print(graph.edges[1, 2])
 positions = nx.circular_layout(graph)
 
 
-nx.draw(graph, positions,  with_labels=True, ax = ax[2])
+nx.draw(graph, positions,  with_labels=True, ax = ax[0])
+
+
 draw_network(graph, k_over_2, focal_node=focal_node,
              ax=ax[1])  # font_weight='bold'
 
 # another inception of small world, k nearest neighbours, n nodes number, p rewiring prob
-G = nx.watts_strogatz_graph(n=10, k=4, p=0.1)
-draw_network(G, k_over_2, focal_node=focal_node,
-             ax=ax[0])  # font_weight='bold'
+
+
+G = nx.Graph()#nx.watts_strogatz_graph(n=10, k=4, p=0.1)
+
+# add weighted edges
+E = [('A', 'B', 2), ('A', 'C', 1), ('B', 'D', 5), ('B', 'E', 3), ('C', 'E', 2)]
+G.add_weighted_edges_from(E)
+
+#pos = nx.spring_layout(G)
+pos = nx.circular_layout(G)
+nx.draw(G, pos, with_labels=True, font_weight='bold', ax = ax[2])
+edge_weight = nx.get_edge_attributes(G, 'weight')
+nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_weight, ax=ax[2])
 
 plt.show()
+
+# save the graph to plot with other external tools
+path = './data/output/toy_graph'
+nx.write_graphml(G, path)
