@@ -22,11 +22,11 @@ insptred from:
  - Assmann, J. in Cultural Memory Studies. An International and Interdisciplinary Handbook (eds Erll, A. & Nünning, A.) 109–118 (Walter de Gruyter, Berlin, 2008).
  -  https://doi.org/10.1038/s41562-018-0474-5 The universal decay of collective memory and attention, Canadia 2019
 
-![[Pasted image 20230406104757.png]]
+[![Pasted image 20230406104757.png](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406104757.png)](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406104757.png)
 
-![[Pasted image 20230406104709.png]]
+[![Pasted image 20230406104709.png](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406104709.png)](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406104709.png)
 
-The cultural memory only part  on their model (neglecting the social memory) can be summarised as this, log-norm decay
+The cultural memory only part  on their model (neglecting the communicative memory) can be summarised as a log-norm decay
 
 
 $\frac{dk}{dt} = - k\cdot ∂$,
@@ -37,7 +37,9 @@ where, $d$ on the left side, first expression, is the derivative of knowledge ov
 
 ## Embers (or quest for fire) model: trait decay and recovery 
 
-If $k(t) < k_{th} \,\rightarrow k(t)=0$, where $k_{th}$ is a knowledge threshold beyond which, if the knowledge is not enough, the trait is considered to be lost. *For the Olympiads is a complex one, as it was alive in living memory, even though the event was not performed for thousands of years, but it needed other prerequisites before recreating the games, like Greek independence and the revival of athletics. Thus, in theory, $k_{th}$ can be arbitrarily low.* 
+If $k(t) < k_{th} \,\rightarrow k(t)=0$, where $k_{th}$ is a knowledge threshold beyond which, if the knowledge is not enough, the trait is considered to be lost. *For the Olympiads is a complex one, as it was alive in living memory, even though the event was not performed for thousands of years, but it needed other prerequisites before recreating the games, like Greek independence and the revival of athletics.* Thus, in theory,  $k_{th}$ can be arbitrarily low.
+
+
 $$
 \begin{equation}
 k(t) =  
@@ -55,7 +57,10 @@ $$
 E(t) = (t+n(t))  \mathbin{\%} f
 \end{equation}
 $$
+
+
 thus, $E(t)$ can have the values
+
 $$
 \begin{equation}
 E(t) = 
@@ -73,24 +78,24 @@ $\Delta t$ is the time interval since the last time E(t) = 1, i.e. how many time
 
 For practical proposes, I'm considering that the threshold is one order of magnitude lower than the initial condition, or $k_{th} = 1/10$.
 
-Then, for $k(t)_{f\rightarrow0}=k_{th}\;\rightarrow\; \Delta t_{max} = f_{th} =-\log(k_{th}/k_0)/∂=-[\log(k_{th})-c]/∂,$
+Then, for a continously recurring event: $E(t) = 1$ &rarr; $\Delta t_{max} = f_{th} =-\log(k_{th}/k_0)/∂=-[\log(k_{th})-c]/∂$,
 $f_{th}(k_{th}=0.1\cdot k_0) = -2.3/∂$
 
 
 ### One realization for $f=5, t_s = 0.01, ∂=2.3/f, n = 0.66$
 
-![[Pasted image 20230406100048.png]]
+[![Pasted image 20230406100048.png](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406100048.png)](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406100048.png)
 
-![[Pasted image 20230406095941.png]]
+[![Pasted image 20230406095941.png](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406095941.png)](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406095941.png)
 
 ### For 33 realizations
 
-![[Pasted image 20230406101123.png]]
+[![Pasted image 20230406101123.png](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406101123.png)](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406101123.png)
 
 
 ### For 3333 realizations 
 
-![[Pasted image 20230406210711.png]]
+[![Pasted image 20230406210711.png](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406210711.png)](https://github.com/andreuandreu/cultural_loss/blob/master/notes/Pasted%20image%2020230406210711.png)
 
 # After-loss Innovation model
 
@@ -102,6 +107,9 @@ This model has the following parameters:
 - $A_{th}$ acquisition threshold
 - $a$ acquisition rate of a lost trait
 - $\sigma$ variance on acquisition 
+
+The model can be descrived by:
+
 $$
 \begin{equation}
 k(t) = 
@@ -111,7 +119,9 @@ k(t) =
 	\end{cases}
 \end{equation}
 $$
+
 where $I(t) = k_0 \cdot E(t)\cdot A(t)$
+
 $$
 \begin{equation}
 A(t) = 
@@ -121,6 +131,7 @@ A(t) =
 	\end{cases}
 \end{equation}
 $$
+
 $A(t)$ is the acceptation or not of a newly innovated previously lost cultural trait. 
 Thus, given the conditions are right, i.e. $E(t) = 0$
 It would be accepted with a probability depending on whether the normal distribution $N(a,\,\sigma)$ is bigger or smaller than a set threshold of acquisition $A_{th}$. 
