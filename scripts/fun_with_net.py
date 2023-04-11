@@ -2,9 +2,13 @@ import networkx as nx
 import pandas as pd
 import dash
 import matplotlib.pyplot as plt
+import numpy as np
+import graph_tool as gt
 
 from smallworld.draw import draw_network
 from smallworld import get_smallworld_graph
+import itertools
+from neo4j import GraphDatabase
 
 
 # define network parameters
@@ -109,5 +113,25 @@ nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_weight, ax=ax[2])
 plt.show()
 
 # save the graph to plot with other external tools
-path = './data/output/toy_graph'
+path = './data/output/toy_graph.cys'
 nx.write_graphml(G, path)
+
+
+# generate a graph and weighted links
+
+n_knodes = 111
+
+g = gt.Graph(directed=False)
+adj_mat = np.random.randint(0, 1, (n, n))
+
+idx = adj_mat.nonzero()
+weights = adj[idx]
+g = Graph()
+g.add_edge_list(np.transpose(idx))
+
+#add weights as an edge propetyMap
+edgeWeight = g.new_edge_property("double")
+edgeWeight.a = weights 
+edgeWeight.ep['edge_weight'] = eedgeWeight
+
+
