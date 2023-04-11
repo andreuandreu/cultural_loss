@@ -44,8 +44,8 @@ $$
 \begin{equation}
 k(t) =  
 	\begin{cases}
-		e^{c-∂ \Delta t}  + [k_0 - k(t-t_s)] \cdot E(t) \; \text{if} \; k(t-t_s) > k_{th}  \\
-		0 \; \text{if} \; k(t-t_s) < k_{th} ,
+		e^{c-∂ \Delta t}  + [k_0 - k(t-t_s)] \cdot E(t) \enspace \text{if} \enspace k(t-t_s) > k_{th}  \\
+		0 \enspace \text{if} \enspace k(t-t_s) < k_{th} ,
 	\end{cases}
 \end{equation}
 $$
@@ -114,8 +114,8 @@ $$
 \begin{equation}
 k(t) = 
 	\begin{cases}
-		e^{c-\Delta t ∂} \; \text{if} \; k(t)  < k_{th} \\
-		I(t) \; \text{if} \; k(t)  > k_{th}
+		e^{c-\Delta t ∂} \enspace \text{if} \enspace k(t)  < k_{th} \\
+		I(t) \enspace \text{if} \enspace k(t)  > k_{th}
 	\end{cases}
 \end{equation}
 $$
@@ -126,15 +126,15 @@ $$
 \begin{equation}
 A(t) = 
 	\begin{cases}
-		1 \; \text{if} \; N(a, \,\sigma)  < A_{th} \\
-		0 \; \text{if} \; N(a,\, \sigma)  > A_{th}
+		1 \enspace \text{if} \enspace N(a, \enspace \sigma)  < A_{th} \\
+		0 \enspace \text{if} \enspace N(a, \enspace \sigma)  > A_{th}
 	\end{cases}
 \end{equation}
 $$
 
 $A(t)$ is the acceptation or not of a newly innovated previously lost cultural trait. 
 Thus, given the conditions are right, i.e. $E(t) = 0$
-It would be accepted with a probability depending on whether the normal distribution $N(a,\,\sigma)$ is bigger or smaller than a set threshold of acquisition $A_{th}$. 
+It would be accepted with a probability depending on whether the normal distribution $N(a,\enspace\sigma)$ is bigger or smaller than a set threshold of acquisition $A_{th}$. 
 $a$ is the mean acquisition rate
 $\sigma$ is the variance on the acquisition 
 
