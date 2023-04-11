@@ -13,7 +13,7 @@ This model has the following parameters:
 - $f$ frequency of performance (for example, access to resources in a seasonal basis)
 - $n$ noise level, i.e. the departure from a non-perfectly regular frequency 
 - $k_0$ initial knowledge $= 1$
-- $k_{th}$ knowledge threshold $= 0.1 * k_0$
+- $k_{th}$ knowledge threshold $= 0.1 \cdot k_0$
 - $t_s$ time step $= 0.1$ 
 
 ## Cultural decay function
@@ -37,7 +37,7 @@ where, $d$ on the left side, first expression, is the derivative of knowledge ov
 
 ## Embers (or quest for fire) model: trait decay and recovery 
 
-If $k(t) < k_{th} \,\rightarrow k(t)=0$, where $k_{th}$ is a knowledge threshold beyond which, if the knowledge is not enough, the trait is considered to be lost. *For the Olympiads is a complex one, as it was alive in living memory, even though the event was not performed for thousands of years, but it needed other prerequisites before recreating the games, like Greek independence and the revival of athletics.* Thus, in theory,  $k_{th}$ can be arbitrarily low.
+If $k(t) < k_{th} \enspace \rightarrow k(t)=0$, where $k_{th}$ is a knowledge threshold beyond which, if the knowledge is not enough, the trait is considered to be lost. *For the Olympiads is a complex one, as it was alive in living memory, even though the event was not performed for thousands of years, but it needed other prerequisites before recreating the games, like Greek independence and the revival of athletics.* Thus, in theory,  $k_{th}$ can be arbitrarily low.
 
 
 $$
@@ -54,7 +54,7 @@ where
 
 $$
 \begin{equation}
-E(t) = (t+n(t))  \mathbin{\%} f
+E(t) = (t+n(t))  \bmod f
 \end{equation}
 $$
 
@@ -71,7 +71,7 @@ E(t) =
 \end{equation}
 $$
 
-and $n(t)$ is a noise value normally distributed around $\mu = 0$ with variance $\sigma =t_s$ $n(t)=N(0, t_s^2) \, \exists \, [-\infty, \infty]$. 
+and $n(t)$ is a noise value normally distributed around $\mu = 0$ with variance $\sigma =t_s$ $n(t)=N(0, t_s^2) \enspace \exists \enspace [-\infty, \infty]$. 
 $c = \log(k_0)$. 
 $\Delta t$ is the time interval since the last time E(t) = 1, i.e. how many time steps $t_s$ ago the last expression event happened. For example, the Olympiads happen every 4 years, thus $\Delta t = f = 4$, but in Covid year they were delayed one year, so $\Delta t = 5$. In the case of WWI $\Delta t =8$ and for WWII $\Delta t =12$.
 
