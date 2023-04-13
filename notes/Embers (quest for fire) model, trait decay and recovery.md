@@ -114,7 +114,7 @@ $$
 \begin{equation}
 k(t) = 
 	\begin{cases}
-		\text{Embers(t)} \text{if} \enspace k(t)  > k_{th} \\
+		e^{c-∂ \Delta t}  + [k_0 - k(t-t_s)] \cdot E(t) \enspace \text{if} \enspace k(t)  > k_{th} \\
 		I(t) \enspace \text{if} \enspace k(t)  < k_{th}
 	\end{cases}
 \end{equation}
