@@ -103,7 +103,7 @@ This model expands on the embers model with the assumption that a cultural trait
 
 It assumes that there is an Innovation rate $I(t)$ where there is a non-zero chance of recreating the initial cultural trait that was lost from cultural memory but can be found in the archaeological record. An example is the discontinuity of the use of concrete for about 1500 years in Western Europe [HISTORY OF CONCRETE FROM ROMAN TIMES TO THE EIGHTEENTH CENTURY, JANET IRENE ATKINSON, 1979]. Though, in this case, the occurrence of natural events where the resources might be available can be considered continuous, what is broken is the trade network to link resources and knowledge.  
 
-This model has the following parameters:
+This model has the following additional parameters:
 - $A_{th}$ acquisition threshold
 - $a$ acquisition rate of a lost trait
 - $\sigma$ variance on acquisition 
@@ -114,8 +114,8 @@ $$
 \begin{equation}
 k(t) = 
 	\begin{cases}
-		e^{c-∂ \Delta t}  + [k_0 - k(t-t_s)] \cdot E(t) \enspace \text{if} \enspace k(t)  > k_{th} \\
-		I(t) \enspace \text{if} \enspace k(t)  < k_{th}
+		e^{c-∂ \Delta t}  + [k_0 - k(t-t_s)] \cdot E(t) \enspace \text{if} \enspace k(t-t_s)  > k_{th} \\
+		I(t) \enspace \text{if} \enspace k(t-t_s)  < k_{th}
 	\end{cases}
 \end{equation}
 $$
