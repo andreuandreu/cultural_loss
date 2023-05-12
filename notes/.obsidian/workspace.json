@@ -18,8 +18,21 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "0d969ff87aee19a9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "(2023-04-12) Embers, starting email.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -85,7 +98,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Embers (quest for fire) model, trait decay and recovery.md",
+                "file": "(2023-04-12) Embers, starting email.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +115,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Embers (quest for fire) model, trait decay and recovery.md",
+                "file": "(2023-04-12) Embers, starting email.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +138,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Embers (quest for fire) model, trait decay and recovery.md"
+                "file": "(2023-04-12) Embers, starting email.md"
               }
             }
           }
@@ -146,6 +159,10 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "da7f487de46ee33c",
-  "lastOpenFiles": []
+  "active": "0d969ff87aee19a9",
+  "lastOpenFiles": [
+    "Embers (quest for fire) model, trait decay and recovery v02.pdf",
+    "Embers (quest for fire) model, trait decay and recovery.md",
+    "(2023-04-12) Embers, starting email.md"
+  ]
 }
