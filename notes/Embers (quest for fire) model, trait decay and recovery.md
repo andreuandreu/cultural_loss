@@ -78,7 +78,7 @@ $\Delta t$ is the time interval since the last time E(t) = 1, i.e. how many time
 
 For practical proposes, I'm considering that the threshold is one order of magnitude lower than the initial condition, or $k_{th} = 1/10$.
 
-Then, for a continously recurring event: $E(t) = 1$ &rarr; $\Delta t_{max} = f_{th} =-\log(k_{th}/k_0)/∂=-[\log(k_{th})-c]/∂$,
+Then, for a continously recurring event: $E(t) = 1$ \rarr; $\Delta t_{max} = f_{th} =-\log(k_{th}/k_0)/∂=-[\log(k_{th})-c]/∂$,
 $f_{th}(k_{th}=0.1\cdot k_0) = -2.3/∂$
 
 
