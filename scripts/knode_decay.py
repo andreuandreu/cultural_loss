@@ -25,30 +25,33 @@ vector_length = 2000
 
 #model var
 output_dir = './data/output/'
-root = 'noiseLevel_k0decay'
+root = 'noiseLevel_threshold207/'
 plots_dir = './plots/embers/'
 
-k0 = 1  # initial knowledge
-kError = 1/10.*k0
-min_kError = 0.05
-max_kError = 0.95
-step_kError = (max_kError - min_kError)/111
-kErrors = np.arange(min_kError, max_kError, step_kError)
-print('kekekekkee', kErrors)
 
-decay = 0.05  # np.log(kError)/peride
+
+periode = 44/time_step#int(-time_step*np.log(kError)/decay)
+max_period = int(83/time_step)#int(-time_step*np.log(kError)/decay)
+min_period = 2 # do never go below 1 for ressolution issues. 
+step_period = (max_period - min_period)/11.
+periodes= np.arange(min_period, max_period, step_period)
+print('peripperi', periodes)
+
+decay = 0.016#np.log(2)/periode  # 0.05  # np.log(kError)/peride
 max_decay = 0.050  # int(-time_step*np.log(kError)/decay)
 min_decay = 0.005   # do never go below 1 for ressolution issues.
 step_decay = (max_decay - min_decay)/111
 decays = np.arange(min_decay, max_decay, step_decay)
 print('dededededekay', decays)
 
-periode = int(-time_step*np.log(kError)/decay)
-max_period = int(83/time_step)#int(-time_step*np.log(kError)/decay)
-min_period = 2 # do never go below 1 for ressolution issues. 
-step_period = (max_period - min_period)/11.
-periodes= np.arange(min_period, max_period, step_period)
-print('peripperi', periodes)
+
+k0 = 1  # initial knowledge
+kError = k0 * np.exp(periode*decay*time_step)  # 1/10.*k0
+min_kError = 0.05
+max_kError = 0.95
+step_kError = (max_kError - min_kError)/11
+kErrors = np.arange(min_kError, max_kError, step_kError)
+print('kekekekkee', kErrors)
 
 false_ratio = 0.11
 max_falses = 0.02#0.6#0.66
@@ -58,7 +61,7 @@ falses_ratios = np.arange(min_falses, max_falses, step_falses)
 print('falsfalsfalse', falses_ratios)
 
 noiseLevel = 0.5
-max_noises = 10.1#0.0002  # 0.6#0.66
+max_noises = 5.1#0.0002  # 0.6#0.66
 min_noises = 0.1#0.0001
 step_noises = (max_noises - min_noises)/11.
 noiseLevels = np.arange(min_noises, max_noises, step_noises)
@@ -118,12 +121,13 @@ def trait_evol( stocastic_dependence, var, par):
     kt = [k0]
     time_vec = [time_step]
     i = 0
+    threshold = k0 * np.exp(-2*np.log(2)/(var.periode*var.decay*time_step))#var.kError
     while i < len(stocastic_dependence)-1:
         
         t = time_step
         #if i > 988:
         #    print('iiiuuuu', i, t)
-        while i < len(stocastic_dependence)-1 and stocastic_dependence[i] == 0 and kt[i] > var.kError:
+        while i < len(stocastic_dependence)-1 and stocastic_dependence[i] == 0 and kt[i] > threshold: 
             t = t + time_step
             i = i+1
             #kt.append(kt[i-1]*np.exp(-t*var.decay))
@@ -132,7 +136,7 @@ def trait_evol( stocastic_dependence, var, par):
             #if i > 998:
             #    print('tttt it ended!', t, kt[i])
             
-        if kt[i] > var.kError: 
+        if kt[i] > threshold:  # var.kError:
             kt.append(k0)
             time_vec.append(par.time_step)
         else: 
@@ -312,9 +316,9 @@ def explore_periode_range(var, par):
         plot_traitTime_evol(one_trait_series, one_time_series)
         plot_multiple_noiseRealizations(k_series_set, Dt_series_set, len_series_set, var, hist_bins)
         
-        name = output_dir + root+'_ts='+str(par.time_step)+'T=' + "{:.2f}".format(T) + '_Te=' +\
-            "{:.2f}".format(var.false_ratio) + '_ke=' + str(var.kError) + \
-            '_d=' + "{:.2}".format(var.decay)+'.npy'
+        name = output_dir +'/' + root+'_ts='+str(par.time_step)+'T=' + "{:.2f}".format(T) + '_Te=' +\
+            "{:.2f}".format(var.false_ratio) + '_ke=' +  \
+            '_d=' + "{:.2}".format(var.decay)+'.npy'  # str(var.kError) +
         np.save(name, np.array(len_series_set).flatten())
     
     return len_data_series
@@ -440,8 +444,8 @@ def file_name_n_varValue(to_modify, value):
     #   '_d=' + "{:.2}".format(var.decay)+'.npy'
     
     name = output_dir + root+'_ts='+str(par.time_step)+'T=' + "{:.2f}".format(var.periode) + '_Te=' +\
-        "{:.2f}".format(var.noiseLevel) + '_ke=' + str(var.kError) + \
-        '_d=' + "{:.2}".format(var.decay)+'.npy'
+        "{:.2f}".format(var.noiseLevel) + '_ke='  + \
+        '_d=' + "{:.2}".format(var.decay)+'.npy'  # + str(var.kError)
     
     return name
 
@@ -452,7 +456,7 @@ def name_survival_fig(to_modify, root_fig):
     if 'periode' in to_modify:
         periode_seg = '_Tran-'+"{:.2f}".format(var.periodes[0])+'-'+"{:.2f}".format(var.periodes[-1])
     else:
-        periode_seg = '_T-' + "{:.2f}".format(var.periodes)
+        periode_seg = '_T-' + "{:.2f}".format(var.periode)
 
     if 'decay' in periode_seg:
         decay_seg = '_Dran-'+"{:.2}".format(var.decays[0])+'-'+"{:.2}".format(var.decays[-1])
@@ -470,7 +474,7 @@ def name_survival_fig(to_modify, root_fig):
         noiseLevel_seg = '_TN-' + "{:.2f}".format(var.noiseLevel)
 
     if  'kError' in to_modify:
-        kError_seg = '_kEran-'+"{:.2f}".format(var.kErrors[0])+' -'+"{:.2f}".format(var.Kerrors[-1])
+        kError_seg = '_kEran-'+"{:.2f}".format(var.kErrors[0])+' -'+"{:.2f}".format(var.kErrors[-1])
     else:
         kError_seg = '_kE-' + "{:.2f}".format(var.kError)
 
@@ -553,8 +557,8 @@ def plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, plots_survivalMa
     to_modify = varNameX + '_' + varNameY
     name_fig = name_survival_fig(to_modify, plots_survivalMat)
 
-    ax.plot(par.vector_length *
-            0.005/(var.periodes*par.time_step)**2)
+    #ax.plot(par.vector_length *
+    #        0.005/(var.periodes*par.time_step)**2)
 
     print('nananannana', name_fig)
     plt.savefig(name_fig, bbox_inches='tight')
@@ -644,6 +648,70 @@ def max_death_interval(var, par):
 
     return n_max_mat
 
+
+def max_halfLife_interval(var, par):
+
+    halfLife_mat = []
+    for e in var.kErrors:
+        halfLife_row = []
+        for l in var.periodes:
+            halfLife_row.append(par.time_step * np.log(k0/e)/l)
+        halfLife_mat.append(halfLife_row)
+
+    fig, ax = plt.subplots()
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes('right', size='5%', pad=0.05)
+    n_max_mat = np.array(halfLife_mat)
+    aux = np.where(halfLife_mat > 86)
+    n_max_mat[aux] = 0
+    aux = np.where(halfLife_mat < 2)
+    n_max_mat[aux] = 86
+
+    # im = ax.imshow(n_max_mat, cmap='bone')  # extent = extent, 'bone'
+    x_tic_labels = np.log(2)*par.time_step/var.decays
+    im = ax.contourf(x_tic_labels, var.kErrors, halfLife_mat,
+                     extend="both", cmap='bone')
+
+    tagX, labelsX = var_tagAndLabels('periodes', var.periodes)
+    tagY, labelsY = var_tagAndLabels('kError', var.kErrors)
+
+    labelsX_short = []
+    intervalX = 20
+    for i in range(len(labelsX)):
+        if i % intervalX == 0:
+            labelsX_short.append(labelsX[i])
+
+    labelsY_short = []
+    intervalY = 10
+    for i in range(len(labelsY)):
+        if i % intervalY == 0:
+            labelsY_short.append(labelsY[i])
+
+    # ax.set(xticks=np.arange(0, len(var.decays), intervalX), xticklabels=labelsX_short,
+    #       yticks=np.arange(0, len(var.kErrors), intervalY), yticklabels=labelsY_short)
+
+    ax.set_ylabel(tagY)
+    ax.set_xlabel(tagX)
+
+    fig.colorbar(im, cax=cax, orientation='vertical')
+
+    return halfLife_mat
+ 
+def plot_threshold_functions():
+    threshold = np.exp(-1/(periodes*decay*time_step))
+    threshold2 = np.exp(-2/(periodes*decay*time_step))
+    threshold05 = np.exp(-1/(2*periodes*decay*time_step))
+    threshold22 = 2**(-2/(periodes*decay*time_step))
+    threshold14 = np.exp(-np.log(2)/(periodes*decay*time_step))
+    threshold214 = np.exp(-2*np.log(2)/(periodes*decay*time_step))
+
+    plt.plot(periodes, threshold, c = 'b')
+    plt.plot(periodes, threshold2, c = 'g')
+    plt.plot(periodes, threshold05, c = 'r')
+    plt.plot(periodes, threshold22, c='m')
+    plt.plot(periodes, threshold14, c='y')
+    plt.plot(periodes, threshold214, c='c')
+
 var = modelVar(periode, false_ratio, decay, kError, k0)
 par = modelPar(time_step, vector_length, Nrealizations)
 #plot_Period_decay_dep(var, par)
@@ -663,19 +731,21 @@ print('valval', values, sum(values[0]))
 
 #multiplot_NxM(m, n, par, var, hist_bins)
 
-varNameY = 'noiseLevel'#'decay'  # 'false_ratio'#
-valuesY = var.noiseLevels# var.decays  # var.falses_ratios#
-varNameX = 'periode'
-valuesX = var.periodes
+varNameY = 'noiseLevel'#'kError'  # 'noiseLevel'#'decay'  # 'false_ratio'#
+valuesY = var.noiseLevels#var.kErrors  # var.decays  # var.falses_ratios#
+varNameX = 'periode'  # 'noiseLevel'  # 'periode'
+valuesX =  var.periodes#
 
-#explore_twoVar_ranges(var, par, varNameX, valuesX, varNameY, valuesY)
-#plot_survival_martrix(varNameY, valuesY, varNameX, valuesX)
-max_death_interval(var, par)
+plot_threshold_functions()
+
+explore_twoVar_ranges(var, par, varNameX, valuesX, varNameY, valuesY)
+plot_survival_martrix(varNameY, valuesY, varNameX, valuesX)
+#max_death_interval(var, par)
 #k_series_set, Dt_series_set, len_series_set = multiple_realizations(
 #    Nrealizations, time_step, k0,  kError, periode, false_ratio,  decay)
 #plot_multiple_noiseRealizations(k_series_set, Dt_series_set, len_series_set)
 
-print('Half Life $t_{1/2}$= ', np.log(2)/var.decay )
+print('Half Life $t_{1/2}$= ', np.log(2)/var.decay*0.5 )
 
 plt.show()
 
