@@ -27,7 +27,7 @@ vector_length = 2000
 
 #model var
 output_dir = './data/output/'
-root = sys.argv[1]  # 'noisTpc_th-e-(Tts)-1'  # 'noisTpc_th-2t12'
+root = sys.argv[1] # 'th_pop' # 'noisTpc_th-e-(Tts)-1'  # 'noisTpc_th-2t12'
 plots_dir = './plots/embers/'
 plots_survivalMat = 'fig_survivalMatrix/'
 
@@ -68,11 +68,17 @@ min_noises = 0.1#0.0001
 step_noises = (max_noises - min_noises)/11.
 noiseLevels = np.arange(min_noises, max_noises, step_noises)
 print('nisnosisnoise', noiseLevels)
-#visualization par
+
+population = 50
+max_pop = 5.1  # 0.0002  # 0.6#0.66
+min_pop = 0.1  # 0.0001
+step_pop = (max_pop - min_pop)/11.
+populations = np.arange(min_pop, max_pop, step_pop)
+print('popopopopopo', populations)
+
+
+# visualization par
 hist_bins = 18
-
-
-
 
 
 
@@ -86,6 +92,9 @@ class modelVar:
 
         self.noiseLevel = noiseLevel
         self.noiseLevels = noiseLevels
+
+        self.population = population
+        self.populations = populations
 
         self.halfLife = halfLife
         self.halfLifes = halfLifes
@@ -110,6 +119,8 @@ def which_threshlod(var, par):
 
     if 'th-2t12' in par.root:
         return k0 * 2**(-2*var.halfLife/(var.periode ))
+    elif 'th_pop' in par.root:
+        return k0 * int(1/var.population)
     elif 'th-t12' in par.root:
         return k0 * 2**(-var.halfLife/(var.periode))
     elif 'th-tau' in par.root:
@@ -167,8 +178,6 @@ def trait_evol( stocastic_dependence, var, par):
     kt = [k0]
     time_vec = [time_step]
     i = 0
-    #threshold = k0 * np.exp(-np.log(2)/(var.periode*var.halfLife*time_step))#var.kError
-    #threshold = k0 * 2**(-var.halfLife/(var.periode * par.time_step))  # var.kError
     threshold = which_threshlod(var, par)
     while i < len(stocastic_dependence)-1:
         
@@ -179,7 +188,10 @@ def trait_evol( stocastic_dependence, var, par):
             t = t + time_step
             i = i+1
             #kt.append(kt[i-1]*np.exp(-t*var.halfLife))
-            kt.append(k0*np.exp(-t/(par.time_step*var.halfLife*np.log(2))))
+            #kt.append(k0*np.exp(-t/(par.time_step*var.halfLife*np.log(2))))
+            k = k0*np.exp(-t/(par.time_step*var.halfLife*np.log(2)))
+            discrete_k = int(var.population * k)/var.population
+            kt.append(discrete_k)
             #kt.append(k0*2**(-t/(par.time_step*var.halfLife)))
         
             time_vec.append(t)
