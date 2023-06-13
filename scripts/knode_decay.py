@@ -21,7 +21,7 @@ has to occur in order for the trait to remain "knowlwgelable" onside of the knod
 '''
 #numerical par
 time_step = 0.5
-Nrealizations = 333
+Nrealizations = 11
 vector_length = 2000
 
 
@@ -33,16 +33,16 @@ plots_survivalMat = 'fig_survivalMatrix/'
 
 
 periode = 10/time_step#int(-time_step*np.log(kError)/halfLife)
-max_period =int(83/time_step)#int(-time_step*np.log(kError)/halfLife)
+max_period =int(16/time_step)#int(-time_step*np.log(kError)/halfLife)
 min_period =2 # do never go below 1 for ressolution issues. 
-step_period =(max_period - min_period)/44.
+step_period =(max_period - min_period)/55.
 periodes= np.arange(min_period, max_period, step_period)
 print('peripperi', periodes)
 
 halfLife = float(sys.argv[2])#88#np.log(2)/periode  # 0.05  #
-max_halfLife = (75/time_step)  # int(-time_step*np.log(kError)/halfLife)
-min_halfLife = 8   # do never go below 1 for ressolution issues.
-step_halfLife = (max_halfLife - min_halfLife)/44
+max_halfLife = (14/time_step)  # int(-time_step*np.log(kError)/halfLife)
+min_halfLife = 2   # do never go below 1 for ressolution issues.
+step_halfLife = (max_halfLife - min_halfLife)/55.
 halfLifes = np.arange(min_halfLife, max_halfLife, step_halfLife)
 print('dededededekay', halfLifes)
 
@@ -62,19 +62,19 @@ step_falses = (max_falses - min_falses)/1.
 falses_ratios = np.arange(min_falses, max_falses, step_falses)
 print('falsfalsfalse', falses_ratios)
 
-noiseLevel = 2.0
+noiseLevel = 0.25
 max_noises = 5.1#0.0002  # 0.6#0.66
 min_noises = 0.1#0.0001
 step_noises = (max_noises - min_noises)/11.
 noiseLevels = np.arange(min_noises, max_noises, step_noises)
 print('nisnosisnoise', noiseLevels)
 
-population = 50
+pop = 33
 max_pop = 5.1  # 0.0002  # 0.6#0.66
 min_pop = 0.1  # 0.0001
 step_pop = (max_pop - min_pop)/11.
-populations = np.arange(min_pop, max_pop, step_pop)
-print('popopopopopo', populations)
+pops = np.arange(min_pop, max_pop, step_pop)
+print('popopopopopo', pops)
 
 
 # visualization par
@@ -93,8 +93,8 @@ class modelVar:
         self.noiseLevel = noiseLevel
         self.noiseLevels = noiseLevels
 
-        self.population = population
-        self.populations = populations
+        self.pop = pop
+        self.pops = pops
 
         self.halfLife = halfLife
         self.halfLifes = halfLifes
@@ -120,7 +120,9 @@ def which_threshlod(var, par):
     if 'th-2t12' in par.root:
         return k0 * 2**(-2*var.halfLife/(var.periode ))
     elif 'th_pop' in par.root:
-        return k0 * int(1/var.population)
+        return k0 * int(1/var.pop)
+    elif 'th_pop1' in par.root:
+        return k0 * 1
     elif 'th-t12' in par.root:
         return k0 * 2**(-var.halfLife/(var.periode))
     elif 'th-tau' in par.root:
@@ -175,7 +177,8 @@ def rle(inarray):
 
 def trait_evol( stocastic_dependence, var, par):
     
-    kt = [k0]
+    kt = [var.pop*var.k0]
+    kt_norm = [var.k0]
     time_vec = [time_step]
     i = 0
     threshold = which_threshlod(var, par)
@@ -190,8 +193,9 @@ def trait_evol( stocastic_dependence, var, par):
             #kt.append(kt[i-1]*np.exp(-t*var.halfLife))
             #kt.append(k0*np.exp(-t/(par.time_step*var.halfLife*np.log(2))))
             k = k0*np.exp(-t/(par.time_step*var.halfLife*np.log(2)))
-            discrete_k = int(var.population * k)/var.population
+            discrete_k = int(var.pop * k)#/var.pop
             kt.append(discrete_k)
+            kt_norm.append(discrete_k/var.pop)
             #kt.append(k0*2**(-t/(par.time_step*var.halfLife)))
         
             time_vec.append(t)
@@ -199,7 +203,8 @@ def trait_evol( stocastic_dependence, var, par):
             #    print('tttt it ended!', t, kt[i])
             
         if kt[i] > threshold:  # var.kError:
-            kt.append(k0)
+            kt.append(var.k0*var.pop)
+            kt_norm.append(var.k0)
             time_vec.append(par.time_step)
         else: 
             #print("end of loop at ", i, kt[i], time_vec[i])
@@ -207,7 +212,7 @@ def trait_evol( stocastic_dependence, var, par):
 
         i = i+1
     
-    return kt , time_vec
+    return kt_norm , time_vec
 
 
 def create_stocastic_dependence(var, par):
@@ -277,9 +282,13 @@ def plot_stocastic_dependence(vector, var, par):
     ax1.set_xlabel('Time')
     ax1.set_ylabel('Recurrent event')
     per_in_yr = var.periode*par.time_step
-    ax1.set_title('recurrence series $T = $' + "{:.1f}".format(per_in_yr) + \
-                   '[yr] $T_{\epsilon} = $' + "{:.2}".format(var.false_ratio) + \
-                  ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t12 =$' + \
+    #ax1.set_title('recurrence series $T = $' + "{:.1f}".format(per_in_yr) + \
+    #               '[yr] $T_{\epsilon} = $' + "{:.2}".format(var.false_ratio) + \
+    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t_{1/2} =$' + \
+    #              "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
+    ax1.set_title('recurrence series $T = $' + "{:.1f}".format(per_in_yr) +
+                  '[yr] $T_{\epsilon} = $' + "{:.2}".format(var.noiseLevel) +
+                  ' $E_p = $' + "{:d}".format(var.pop) + ' $t_{1/2} =$' +
                   "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
 
     # Plot power spectrum of boolean vector
@@ -299,18 +308,26 @@ def plot_traitTime_evol(trait_series, time_series):
     # Create figure with two subplots
     fig, (ax1, ax2) = plt.subplots(2, 1)
 
-    ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '[yr] $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
-                  ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t_{1/2} =$' + "{:.1f}".format(var.halfLife) + '[yr]')
+    #ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '[yr] $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
+    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t_{1/2} =$' + "{:.1f}".format(var.halfLife) + '[yr]')
 
+    ax1.set_title('$T =$' + "{:.2f}".format(var.periode) + 
+                  '[yr] $T_{\epsilon} =$' + "{:.2f}".format(var.noiseLevel) +
+                  ' $E_p =$' + "{:d}".format(var.pop) + 
+                  ' $t_{1/2} =$' + "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
+    
     # Plot time series of boolean vector
     ax1.plot(np.arange(len(trait_series))*par.time_step, trait_series)
+
+    ax1.hlines(y=0, xmin=0, xmax=len(trait_series)*par.time_step,
+               ls='--', linewidth=1.2, color='k')
     #ax1.set_xlabel('time')
-    ax1.set_ylabel('knowledge')
+    ax1.set_ylabel('$E_p(t)/E^0_p$')
 
     # Plot power spectrum of boolean vector
     ax2.plot(np.arange(len(trait_series))*par.time_step, time_series)  #
     ax2.set_xlabel('time')
-    ax2.set_ylabel('Delta t')
+    ax2.set_ylabel('$\Delta t$')
 
 
     plt.tight_layout()
@@ -319,17 +336,24 @@ def plot_traitTime_evol(trait_series, time_series):
 def plot_multiple_traitTime_evol(ax1, ax2, trait_series, time_series, var, par, alpha, lw =0.3):
 
     # Plot time series of boolean vector
-    ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '$[t_s]$ $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
-                  ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t12 =$' + "{:.1f}".format(var.halfLife))
+    #ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '$[t_s]$ $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
+    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t12 =$' + "{:.1f}".format(var.halfLife))
+    
+
+    ax1.set_title('$T= $' + "{:.2f}".format(var.periode) +
+                '$[t_s]$ $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
+                ' $E_p = $' + "{:d}".format(var.pop) +
+                ' $t_{1/2} =$' + "{:.1f}".format(var.halfLife*par.time_step))
+    
     ax1.plot(np.arange(len(trait_series))*par.time_step,
               trait_series, color='orange', lw=lw, alpha=alpha)
     #ax1.set_xlabel('step')
-    ax1.set_ylabel('knowledge')
+    ax1.set_ylabel('$E_p(t)/E^0_p$')
 
     # Plot power spectrum of boolean vector
     ax2.plot(np.arange(len(trait_series))*par.time_step, time_series,  color='blue', lw=lw, alpha=alpha)  #
     ax2.set_xlabel('time')
-    ax2.set_ylabel('Delta t')
+    ax2.set_ylabel('$\Delta t$')
     
 
     #plt.tight_layout()
@@ -360,6 +384,8 @@ def explore_twoVar_ranges(var, par, varNameX, varRangeX, varNameY, varRangeY ):
 
     for v in varRangeY:
         name = file_name_n_varValue(varNameY, v)
+        if os.path.exists(name):
+            break
         print('name var', varNameY, 'val', v)
         explore_oneVar_range(var, par, varNameX, varRangeX)
 
@@ -446,7 +472,9 @@ def plot_multiple_noiseRealizations(k_series_set, Dt_series_set, len_series_set,
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
     
     var.kError = which_threshlod(var, par)
-    ax1.hlines(y=var.kError, xmin=0, xmax=vector_length*par.time_step,
+    #ax1.hlines(y=var.kError, xmin=0, xmax=vector_length*par.time_step,
+    #           ls='--', linewidth=1.2, color='r')
+    ax1.hlines(y=1/var.pop, xmin=0, xmax=vector_length*par.time_step,
                ls='--', linewidth=1.2, color='r')
    
     noise_range = np.arange(0, 0.5, 0.5/Nrealizations)
@@ -503,8 +531,11 @@ def file_name_n_varValue(to_modify, value):
     if not os.path.exists(path):
         os.makedirs(path)
     
-    name = path +'T=' + "{:.2f}".format(var.periode) + '_Te=' +\
-        "{:.2f}".format(var.noiseLevel) + '_t12=' + "{:.1f}".format(var.halfLife)+'.npy'  # + str(var.kError)
+    name = path + \
+    'T='   + "{:.2f}".format(var.periode) + \
+    '_Te=' + "{:.2f}".format(var.noiseLevel) + \
+    '_t12='+ "{:.1f}".format(var.halfLife)+ \
+    '_Ep=' + "{:d}".format(var.pop) + '.npy'  # + str(var.kError)
     
     return name
 
@@ -536,6 +567,13 @@ def name_survival_fig(to_modify, root_fig):
     else:
         kError_seg = '_kE-' + "{:.2f}".format(var.kError)
 
+    if 'pop' in to_modify:
+        pop_seg = '_popRan-' + \
+            "{:d}".format(var.pops[0])+' -' + \
+            "{:d}".format(var.pops[-1])
+    else:
+        pop_seg = '_pop-' + "{:d}".format(var.pop)
+
     path = plots_dir + root_fig + par.root + '_ts=' + \
         str(par.time_step) + '_L='+str(par.vector_length) + \
         '_N=' + str(par.Nrealizations) + '/'
@@ -564,7 +602,7 @@ def var_tagAndLabels(varName, values):
             labels.append("{:.2f}".format(par.time_step*e))
 
     elif varName == 'false_ratio':
-        tag='$T_{\epsilon}$[%]'
+        tag='$T_f$[%]'
         for e in values:
             labels.append("{:.2}".format(e))
 
@@ -628,8 +666,10 @@ def plot_survival_martrix(varNameY, valuesY, varNameX, valuesX):
     x, y = np.meshgrid(var.periodes, var.halfLifes)
     # extent = extent, 'bone'
     im = ax.imshow(survival_rate,   extent=[x.min(), x.max(), y.max(), y.min()], cmap='OrRd')
-    ax.plot(var.periodes, var.halfLifes/np.log(var.noiseLevel))
-
+    # /np.log(100*var.noiseLevel)
+    ax.plot(var.periodes, -var.periodes/np.log2(1/(var.pop-1)))
+    ax.plot(var.periodes, -var.periodes/np.log(1/(var.pop-1)))
+    #ax.plot(var.periodes, var.periodes/np.log(2))
     #for e in var.noiseLevels:
     #    ax.plot(var.periodes, var.halfLifes*e/np.log(2))
     #ax.plot(var.periode, var.halfLife)
@@ -1002,7 +1042,7 @@ print('valval', values, sum(values[0]))
 #print(trait_series)
 
 #
-#len_data_series = explore_periode_range(var, par)
+len_data_series = explore_periode_range(var, par)
 #len_data_series = explore_noise_range(var, par)
 #len_data_series = explore_halfLife_range(var, par)
 
@@ -1017,7 +1057,7 @@ varNameX = 'periode'  # 'noiseLevel'  # 'periode'
 valuesX =  var.periodes#
 
 
-#explore_twoVar_ranges(var, par, varNameX, valuesX, varNameY, valuesY)
+explore_twoVar_ranges(var, par, varNameX, valuesX, varNameY, valuesY)
 plot_survival_martrix(varNameY, valuesY, varNameX, valuesX)
 
 #multiplot_survivals(varNameY, valuesY, varNameX, valuesX, 'halfLife', halfLife_values)
@@ -1029,94 +1069,6 @@ plot_survival_martrix(varNameY, valuesY, varNameX, valuesX)
 #k_series_set, Dt_series_set, len_series_set = multiple_realizations(
 #    Nrealizations, time_step, k0,  kError, periode, false_ratio,  halfLife)
 #plot_multiple_noiseRealizations(k_series_set, Dt_series_set, len_series_set)
-
-# ethnobotanical low
-Delta_t = 9 # [yr]
-observed_per_surb = 100-9 # 100 - 8
-name = 'ethnobotanical low'
-loss_percent = 2**(-Delta_t/(halfLife*par.time_step))*100
-halfLife_fun = -Delta_t/np.log2(observed_per_surb/100)
-print(' percentage lost in time', Delta_t,
-      '[yr] given half life = ', halfLife*par.time_step, loss_percent)
-print(name, ' half life given percent of  surb  after', Delta_t,
-      '[yr]= ', observed_per_surb, '%', halfLife_fun)
-
-# ethnobotanical high
-Delta_t = 9  # [yr]
-observed_per_surb = 100-26  # 100 - 8
-name = 'ethnobotanical high'
-loss_percent = 2**(-Delta_t/(halfLife*par.time_step))*100
-halfLife_fun = -Delta_t/np.log2(observed_per_surb/100)
-print(' percentage lost in time', Delta_t,
-      '[yr] given half life = ', halfLife*par.time_step, loss_percent)
-print(name, ' half life given percent of  surb  after', Delta_t,
-      '[yr]= ', observed_per_surb, '%', halfLife_fun)
-
-
-#military test
-Delta_t = 0.115#[yr]
-observed_per_surb = 100-17#100 - 8
-name = 'military'
-loss_percent = 2**(-Delta_t/(halfLife*par.time_step))*100
-halfLife_fun = -Delta_t/np.log2(observed_per_surb/100)
-print(' percentage lost in time', Delta_t,
-      '[yr] given half life = ', halfLife*par.time_step, loss_percent)
-print(name, ' half life given percent of  surb  after', Delta_t,
-      '[yr]= ', observed_per_surb, '%', halfLife_fun)
-
-# military perceptual
-Delta_t = 1  # [yr]
-observed_per_surb = 100-100*(80-52)/80  # 100 - 8
-name = 'military perceptual'
-loss_percent = 2**(-Delta_t/(halfLife*par.time_step))*100
-halfLife_fun = -Delta_t/np.log2(observed_per_surb/100)
-print(name, ' half life given percent of  surb  after', Delta_t,
-      '[yr]= ', observed_per_surb, '%', halfLife_fun, '[yr]')
-
-# military procedual-motor
-Delta_t = 1  # [yr]
-observed_per_surb = 100-100*(750-700)/750  # 100 - 8
-name = 'military procedual-motor'
-loss_percent = 2**(-Delta_t/(halfLife*par.time_step))*100
-halfLife_fun = -Delta_t/np.log2(observed_per_surb/100)
-print(name, ' half life given percent of  surb  after', Delta_t,
-      '[yr]= ', observed_per_surb, '%', halfLife_fun, '[yr]')
-
-# CPR
-Delta_t = 3  # [yr]
-observed_per_surb = 12  # 100 - 8
-name = 'CPR'
-loss_percent = 2**(-Delta_t/(halfLife*par.time_step))*100
-halfLife_fun = -Delta_t/np.log2(observed_per_surb/100)
-print(name, ' half life given percent of  surb  after', Delta_t,
-      '[yr]= ', observed_per_surb, '%', halfLife_fun, '[yr]')
-
-#gaelic football
-Delta_t = 6*7/365 # [yr]
-observed_per_surb = 100 - 100*(15-12)/15  # 100 - 8
-name = 'gaelic'
-loss_percent = 2**(-Delta_t/(halfLife*par.time_step))*100
-halfLife_fun = -Delta_t/np.log2(observed_per_surb/100)
-print(name, ' half life given percent of  surb  after', Delta_t,
-      '[yr]= ', observed_per_surb, '%', halfLife_fun)
-
-# recall school
-Delta_t = 26*7/365  # [yr]
-observed_per_surb = 100 - 100*(80-58)/80  # 100 - 8
-name = 'recall school'
-loss_percent = 2**(-Delta_t/(halfLife*par.time_step))*100
-halfLife_fun = -Delta_t/np.log2(observed_per_surb/100)
-print(name, ' half life given percent of  surb  after', Delta_t,
-      '[yr]= ', observed_per_surb, '%', halfLife_fun)
-
-# recognition school
-Delta_t = 26*7/365  # [yr]
-observed_per_surb = 100 - 100*(85-80)/85  # 100 - 8
-name = 'gaelic'
-loss_percent = 2**(-Delta_t/(halfLife*par.time_step))*100
-halfLife_fun = -Delta_t/np.log2(observed_per_surb/100)
-print(name, ' half life given percent of  surb  after', Delta_t,
-      '[yr]= ', observed_per_surb, '%', halfLife_fun)
 
 
 
