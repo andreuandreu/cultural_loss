@@ -10,6 +10,7 @@ from copy import deepcopy
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 import sys
+import seaborn as sns
 
 #python scripts/knode_decay.py 'th_1-e(-Tts)-1' 44
 '''
@@ -21,9 +22,8 @@ has to occur in order for the trait to remain "knowlwgelable" onside of the knod
 '''
 #numerical par
 time_step = 0.5
-Nrealizations = 11
+Nrealizations = 111
 vector_length = 2000
-
 
 #model var
 output_dir = './data/output/'
@@ -31,18 +31,17 @@ root = sys.argv[1] # 'th_pop' # 'noisTpc_th-e-(Tts)-1'  # 'noisTpc_th-2t12'
 plots_dir = './plots/embers/'
 plots_survivalMat = 'fig_survivalMatrix/'
 
-
 periode = 10/time_step#int(-time_step*np.log(kError)/halfLife)
-max_period =int(16/time_step)#int(-time_step*np.log(kError)/halfLife)
+max_period =int(11/time_step)#int(-time_step*np.log(kError)/halfLife)
 min_period =2 # do never go below 1 for ressolution issues. 
-step_period =(max_period - min_period)/55.
+step_period =(max_period - min_period)/22.
 periodes= np.arange(min_period, max_period, step_period)
 print('peripperi', periodes)
 
 halfLife = float(sys.argv[2])#88#np.log(2)/periode  # 0.05  #
-max_halfLife = (14/time_step)  # int(-time_step*np.log(kError)/halfLife)
+max_halfLife = (20/time_step)  # int(-time_step*np.log(kError)/halfLife)
 min_halfLife = 2   # do never go below 1 for ressolution issues.
-step_halfLife = (max_halfLife - min_halfLife)/55.
+step_halfLife = (max_halfLife - min_halfLife)/8.
 halfLifes = np.arange(min_halfLife, max_halfLife, step_halfLife)
 print('dededededekay', halfLifes)
 
@@ -69,9 +68,9 @@ step_noises = (max_noises - min_noises)/11.
 noiseLevels = np.arange(min_noises, max_noises, step_noises)
 print('nisnosisnoise', noiseLevels)
 
-pop = 33
-max_pop = 5.1  # 0.0002  # 0.6#0.66
-min_pop = 0.1  # 0.0001
+pop = int(sys.argv[2])#33
+max_pop = 51  # 0.0002  # 0.6#0.66
+min_pop = 1  # 0.0001
 step_pop = (max_pop - min_pop)/11.
 pops = np.arange(min_pop, max_pop, step_pop)
 print('popopopopopo', pops)
@@ -245,6 +244,7 @@ def create_noisy_period_series(var, par):
 
     indexes = np.arange(0, par.vector_length, var.periode)
     #noise = np.random.random(len(indexes))*var.noiseLevel
+    #print('is this raaaaight/?', var.noiseLevel)
     noise = np.random.normal(
         loc=0, scale=var.noiseLevel*var.periode, size=len(indexes))
 
@@ -284,11 +284,11 @@ def plot_stocastic_dependence(vector, var, par):
     per_in_yr = var.periode*par.time_step
     #ax1.set_title('recurrence series $T = $' + "{:.1f}".format(per_in_yr) + \
     #               '[yr] $T_{\epsilon} = $' + "{:.2}".format(var.false_ratio) + \
-    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t_{1/2} =$' + \
+    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $\tau =$' + \
     #              "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
     ax1.set_title('recurrence series $T = $' + "{:.1f}".format(per_in_yr) +
                   '[yr] $T_{\epsilon} = $' + "{:.2}".format(var.noiseLevel) +
-                  ' $E_p = $' + "{:d}".format(var.pop) + ' $t_{1/2} =$' +
+                  ' $E_p = $' + "{:d}".format(var.pop) + r' $\tau =$' +
                   "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
 
     # Plot power spectrum of boolean vector
@@ -309,12 +309,12 @@ def plot_traitTime_evol(trait_series, time_series):
     fig, (ax1, ax2) = plt.subplots(2, 1)
 
     #ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '[yr] $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
-    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t_{1/2} =$' + "{:.1f}".format(var.halfLife) + '[yr]')
+    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' r$\tau =$' + "{:.1f}".format(var.halfLife) + '[yr]')
 
     ax1.set_title('$T =$' + "{:.2f}".format(var.periode) + 
                   '[yr] $T_{\epsilon} =$' + "{:.2f}".format(var.noiseLevel) +
                   ' $E_p =$' + "{:d}".format(var.pop) + 
-                  ' $t_{1/2} =$' + "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
+                  r' $\tau =$' + "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
     
     # Plot time series of boolean vector
     ax1.plot(np.arange(len(trait_series))*par.time_step, trait_series)
@@ -343,7 +343,7 @@ def plot_multiple_traitTime_evol(ax1, ax2, trait_series, time_series, var, par, 
     ax1.set_title('$T= $' + "{:.2f}".format(var.periode) +
                 '$[t_s]$ $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
                 ' $E_p = $' + "{:d}".format(var.pop) +
-                ' $t_{1/2} =$' + "{:.1f}".format(var.halfLife*par.time_step))
+                ' r$\tau =$' + "{:.1f}".format(var.halfLife*par.time_step))
     
     ax1.plot(np.arange(len(trait_series))*par.time_step,
               trait_series, color='orange', lw=lw, alpha=alpha)
@@ -596,7 +596,7 @@ def var_tagAndLabels(varName, values):
             labels.append("{:.0f}".format(e*par.time_step))
 
     elif varName == 'halfLife':
-        tag = '$t_{1/2}$[yr]'
+        tag = 'r$\tau$[yr]'
         #tag = '$\lambda$[yr$^-1$]'
         for e in values:
             labels.append("{:.2f}".format(par.time_step*e))
@@ -625,7 +625,7 @@ def set_title_mat(varNameX, varNameY, num, maxNum):
 
     if varNameX == 'periode' and varNameY == 'noiseLevel':
         if num == 0:
-            return '$t_{1/2}$ = ' + "{:4.0f}".format(var.halfLife*par.time_step)
+            return r'$\tau$ = ' + "{:4.0f}".format(var.halfLife*par.time_step)
         elif num == maxNum-1:
             return "{:4.0f}".format(var.halfLife*par.time_step) + '[yr]'
         else:
@@ -667,8 +667,8 @@ def plot_survival_martrix(varNameY, valuesY, varNameX, valuesX):
     # extent = extent, 'bone'
     im = ax.imshow(survival_rate,   extent=[x.min(), x.max(), y.max(), y.min()], cmap='OrRd')
     # /np.log(100*var.noiseLevel)
-    ax.plot(var.periodes, -var.periodes/np.log2(1/(var.pop-1)))
-    ax.plot(var.periodes, -var.periodes/np.log(1/(var.pop-1)))
+    #ax.plot(var.periodes, -var.periodes/np.log2(1/(var.pop-1)))
+    #ax.plot(var.periodes, -var.periodes/np.log(1/(var.pop-1)))
     #ax.plot(var.periodes, var.periodes/np.log(2))
     #for e in var.noiseLevels:
     #    ax.plot(var.periodes, var.halfLifes*e/np.log(2))
@@ -680,9 +680,9 @@ def plot_survival_martrix(varNameY, valuesY, varNameX, valuesX):
     #ax.set(xticks=np.arange(len(valuesX)), xticklabels=labelsX,
     #       yticks=np.arange(len(valuesY)), yticklabels=labelsY)
     
-    #title = '$t_{1/2}$ = ' + "{:4.0f}".format(var.halfLife*par.time_step) + '[yr]'
+    #title = r'$\tau$ = ' + "{:4.0f}".format(var.halfLife*par.time_step) + '[yr]'
     title = '$T_{\epsilon}$ = ' + \
-        "{:3.1f}".format(100*var.noiseLevel) + '[%]'
+        "{:3.3f}".format(var.noiseLevel) + '[%]'
     ax.set_ylabel(tagY)
     ax.set_xlabel(tagX)
     ax.set_title(title)
@@ -727,68 +727,104 @@ def multiplot_NxM(rows, cols, par, var, varName, hist_bins):
             l += 1
 
 
-def multiplot_survivals(varNameY, valuesY, varNameX, valuesX, varName, varArr, rows=1):
+def multiexplore_twoVar_ranges(var, par, varNameX, valuesX, varNameY, valuesY, varNameZ, valuesZ):
+    for e in valuesZ:
+        name = file_name_n_varValue(varNameZ, e)
+        explore_twoVar_ranges(var, par, varNameX, valuesX, varNameY, valuesY)
+
+
+def multiplot_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, rows=1):
 
     # create a figure and set the size
-    cols = len(varArr)
-    #fig, axs = plt.subplots(rows, cols, sharey=True, subplot_kw=dict(
+    cols = len(valuesZ)
+    # fig, axs = plt.subplots(rows, cols, sharey=True, subplot_kw=dict(
     #    frameon=False))  # sharex=True, sharey=True
     fig, axs = plt.subplots(rows, cols)
-    
+
     tagX, labelsX = var_tagAndLabels(varNameX, valuesX)
     tagY, labelsY = var_tagAndLabels(varNameY, valuesY)
 
-    mossaic_keys = [ ['0', '1', '2', '3', '4', '5' ]]
+    # [['0', '1', '2', '3', '4', '5']]
+    mossaic_keys = [np.arange(len(valuesZ)).astype(str)]
+    print('mmomomo', mossaic_keys)
 
-    hight = 4
+    hight = 12.1
+    width = 12.1
     fig, axs = plt.subplot_mosaic(
         mossaic_keys,
         sharex=True,
         sharey=True,
-        figsize=(12.1, hight),
+        figsize=(width, hight),
         gridspec_kw={"hspace": 0, "wspace": 0},
     )
 
-
-    labelsX_short  = []
-    intervalX = 5
+    labelsX_short = []
+    intervalX = 3
     for i in range(len(labelsX)):
         if i % intervalX == 0:
             labelsX_short.append(labelsX[i])
 
-
-    #for i in range(rows):
+    # for i in range(rows):
     for j in range(cols):
-        #name = file_name_n_varValue(varName, varArr[j])
-        if varName == 'halfLife':
-            var.halfLife = varArr[j]
-        
+        name = file_name_n_varValue(varNameZ, valuesZ[j])
+        # if varNameZ == 'halfLife':
+        #    var.halfLife = valuesZ[j]
+
         survival_rate = a_survival_martrix(
             varNameY, valuesY, varNameX, valuesX)
         im = axs[str(j)].imshow(survival_rate, cmap='OrRd')
         if j == 0:
             axs[str(j)].set_ylabel(tagY)
-            axs[str(j)].set(xticks=np.arange(0, len(var.halfLifes), intervalX), xticklabels=labelsX_short,
-                   yticks=np.arange(len(valuesY)), yticklabels=labelsY)
-        #if j > 0:
-            #axs[str(j)] = axs[j-1].twiny()
-            #axs[j].set(xticks=np.arange(len(valuesX)), xticklabels=labelsX)
+            # axs[str(j)].set(xticks=np.arange(0, len(valuesZ), intervalX), xticklabels=labelsX_short,
+            #      yticks=np.arange(len(valuesY)), yticklabels=labelsY)
+        # if j > 0:
+            # axs[str(j)] = axs[j-1].twiny()
+            # axs[j].set(xticks=np.arange(len(valuesX)), xticklabels=labelsX)
         title = set_title_mat(varNameX, varNameY, j, cols)
-        axs[str(j)].set_xlabel(tagX)
+        # axs[str(j)].set_xlabel(tagX)
         axs[str(j)].set_title(title)
 
-    im = axs[str(cols-1)].imshow(survival_rate, cmap = 'OrRd')
-    divider=make_axes_locatable(axs[str(cols-1)])
-    cax = divider.append_axes('right', size='0%', pad=0.0)
-    
-    fig.colorbar(im, cax=cax, orientation='vertical')
 
-    #to_modify = varNameX + '_' + varNameY
-    #name_fig = name_survival_fig(to_modify, par.plots_survivalMat)
-
- 
 
         
+
+
+def multiplot_survivals_seaborn(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, rows=1):
+
+    # create a figure and set the size
+    cols = len(valuesZ)
+    #fig, axs = plt.subplots(rows, cols, sharey=True, subplot_kw=dict(
+    #    frameon=False))  # sharex=True, sharey=True
+    fig, axs = plt.subplots(ncols=cols)
+    
+    tagX, labelsX = var_tagAndLabels(varNameX, valuesX)
+    tagY, labelsY = var_tagAndLabels(varNameY, valuesY)
+
+    labelsX_short  = []
+    intervalX = 3
+    for i in range(len(labelsX)):
+        if i % intervalX == 0:
+            labelsX_short.append(labelsX[i])
+
+    surv_matrices = np.array([])#.reshape(len(valuesY), len(valuesZ))
+
+
+    for v in valuesZ:
+
+        name = file_name_n_varValue(varNameZ, v)
+
+        survival_rate = a_survival_martrix(
+            varNameY, valuesY, varNameX, valuesX)
+        
+        #surv_matrices[j] = survival_rate
+        surv_matrices = np.concatenate((surv_matrices, survival_rate))
+ 
+    
+    df = pd.DataFrame(data=surv_matrices, columns=valuesZ)
+    sns.heatmap(df)
+   
+
+ 
 
 def a_survival_martrix(varNameY, valuesY, varNameX, valuesX):
 
@@ -999,12 +1035,12 @@ def plot_threshold_functions_halfLife(var, par):
     # ax.plot(periodes, threshold05, c='r', label='exp(-ts/T)')
 
     # ax.plot(periodes, 1-threshold1, c='m', label='1-exp(-1/T)')
-    ax.plot(var.halfLifes, threshold2, c='b',  label='$1-2^{-1/t_{1/2}}$')
+    ax.plot(var.halfLifes, threshold2, c='b',  label=r'$1-2^{-1/\tau}$')
     # ax.plot(periodes, 1-threshold05, c='c', label='1-exp(-ts/T)')
 
     ax.legend(frameon=False)
     ax.set_ylabel('$k_{\epsilon}$')
-    ax.set_xlabel('$t_{1/2}$')
+    ax.set_xlabel(r'$\tau$')
 
 
 
@@ -1025,6 +1061,10 @@ def plot_threshold_functions_periode_halfLife():
     ax.plot(periodes, threshold14, c='y')
     #ax.plot(periodes, threshold214, c='c')
 
+
+
+
+
 var = modelVar(periode, false_ratio, halfLife, kError, k0)
 par = modelPar(time_step, vector_length, Nrealizations)
 #plot_Period_halfLife_dep(var, par)
@@ -1042,25 +1082,34 @@ print('valval', values, sum(values[0]))
 #print(trait_series)
 
 #
-len_data_series = explore_periode_range(var, par)
+#len_data_series = explore_periode_range(var, par)
 #len_data_series = explore_noise_range(var, par)
 #len_data_series = explore_halfLife_range(var, par)
 
 
 #multiplot_NxM(m, n, par, var, hist_bins)
 
-halfLife_values = [12, 22, 44, 88, 176, 356]
+halfLife_values = [8, 10, 12, 16, 20, 24]
+halfLife_values = [4, 8, 10, 16, 20, 24]
 
-varNameY = 'halfLife'#'noiseLevel'#'kError'  # 'noiseLevel'#  # 'false_ratio'#
-valuesY = var.halfLifes #var.noiseLevels  # var.kErrors  #  # var.falses_ratios#
+varNameY = 'noiseLevel'  # 'noiseLevel'#'kError'  # 'noiseLevel'#  # 'false_ratio'#
+valuesY = var.noiseLevels #var.noiseLevels  # var.kErrors  #  # var.falses_ratios#
 varNameX = 'periode'  # 'noiseLevel'  # 'periode'
 valuesX =  var.periodes#
+varNameZ = 'halfLife'  # 'noiseLevel'  # 'periode'
+valuesZ = var.halfLifes
 
 
-explore_twoVar_ranges(var, par, varNameX, valuesX, varNameY, valuesY)
-plot_survival_martrix(varNameY, valuesY, varNameX, valuesX)
+#explore_twoVar_ranges(var, par, varNameX, valuesX, varNameY, valuesY)
 
-#multiplot_survivals(varNameY, valuesY, varNameX, valuesX, 'halfLife', halfLife_values)
+#plot_survival_martrix(varNameY, valuesY, varNameX, valuesX)
+multiexplore_twoVar_ranges(var, par, varNameX, valuesX,
+                           varNameY, valuesY, varNameZ, valuesZ)
+multiplot_survivals(varNameY, valuesY, varNameX,
+                    valuesX, varNameZ, valuesZ)
+
+#multiplot_survivals_seaborn(varNameY, valuesY, varNameX,
+#                            valuesX, varNameZ, valuesZ)
 
 #plot_threshold_functions_preiode(var, par)
 #plot_threshold_functions_halfLife(var, par)
