@@ -37,8 +37,7 @@ def ini_conf_file(wavelet):
     # section settings
     config_file.set("names", "in_data_tag", in_data_tag)
     config_file.set("names", "sufixes", sufixes)
-    config_file.set("names", "pha_amp_com", pha_amp_com)
-    config_file.set("names", "pha_amp_more", pha_amp_more)
+
 
     ###ADD SECTION###
     config_file.add_section("emb_par")
@@ -46,9 +45,7 @@ def ini_conf_file(wavelet):
     # section settings
     config_file.set("emb_par", "bins", "150")
     config_file.set("emb_par", "max_tau", "10")
-    config_file.set("emb_par", "jump_tau", "5")
-    config_file.set("emb_par", "embeding_dimension", "2,1,1,1,1")
-    config_file.set("emb_par", "period_range", "6,84")
+
 
     ###ADD SECTION###
     config_file.add_section("prob_est")
