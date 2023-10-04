@@ -80,8 +80,8 @@ def name_survival_fig(to_modify, root_fig, var, par, analy=''):
 
     if 'pop' in to_modify:
         pop_seg = '_popRan-' + \
-            "{:d}".format(var.pops[0])+' -' + \
-            "{:d}".format(var.pops[-1])
+            "{:0f}".format(var.pops[0])+' -' + \
+            "{:0f}".format(var.pops[-1])
     else:
         pop_seg = '_pop-' + "{:d}".format(var.pop)
 
@@ -101,7 +101,7 @@ def name_survival_fig(to_modify, root_fig, var, par, analy=''):
         os.makedirs(path)
 
     name_fig = path + 'fig' + periode_seg + \
-        noiseLevel_seg + halfLife_seg + '.png'  # + kError_seg  +
+        noiseLevel_seg + halfLife_seg   # + kError_seg  +
     print('nonanonaonaoa', name_fig)
 
     return name_fig

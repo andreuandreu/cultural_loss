@@ -51,6 +51,7 @@ def countTempFracasos(nTimes, T, mu, sigma, Nper, t_death):
     return fracasos
 
 
+
 #@jit((int64)(int64, int64, float64, float64, float64), nopython=True, fastmath=True)
 def create_noisy_period_series(nTimes, L, T, sigma, t_death):
 

@@ -13,6 +13,7 @@ import sys
 import plot_survival_matrices as psm
 import plot_decay_functions as pdf
 import name_files as nf
+import Analitical_node as an
 import scipy.stats
 
 
@@ -229,8 +230,10 @@ def analy_explore_twoVar_ranges(varNameX, varRangeX, varNameY, varRangeY, var, p
     rows = len(varRangeY)
     cols = len(varRangeX)
     survival_mat = np.empty((rows, cols))
+    survival_mat_alber = np.empty((rows, cols))
     to_modify = varNameX +'_'+ varNameY
     name_mat = nf.name_survival_ranges( to_modify, 'mat_', var, par, analy) + '.npy'
+    name_mat_al = nf.name_survival_ranges( to_modify, 'mat_', var, par, 'alber') + '.npy'
     
     for i, v1 in enumerate(varRangeY):
         #if os.path.exists(name_mat):
@@ -244,15 +247,17 @@ def analy_explore_twoVar_ranges(varNameX, varRangeX, varNameY, varRangeY, var, p
             p_surb = scipy.stats.norm(var.periode, var.noiseLevel*var.periode).cdf(ts_death)
             
             cumulat_p_surb = p_surb**(par.vector_length/var.periode)
+            n_frac_alber = an.countTempFracasos(
+                par.Nrealizations, var.periode, 0, var.noiseLevel*var.periode, par.vector_length/var.periode, ts_death)
             #print(var.periode, var.noiseLevel, 'dedede', cumulat_p_surb)
             survival_mat[i, j] = cumulat_p_surb
+            survival_mat_alber[i, j] = 1-n_frac_alber/par.Nrealizations
             
-    print('mamamamnanana', name_mat)
-    threshold_value = 0.95
-    count_higher = np.sum(survival_mat > threshold_value)
-    print(
-        f"Number of elements higher than {threshold_value}: {count_higher} out of {len(survival_mat.flatten())}")
+    #threshold_value = 0.95
+    #count_higher = np.sum(survival_mat > threshold_value)
+    #print( f"Number of elements higher than {threshold_value}: {count_higher} out of {len(survival_mat.flatten())}")
     np.save(name_mat, survival_mat)
+    np.save(name_mat_al, survival_mat_alber)
     return name_mat
         
 
@@ -366,7 +371,7 @@ hist_bins = 18
 
 # numerical par
 time_step = 0.5
-Nrealizations = 666
+Nrealizations = 111
 vector_length = 2000
 
 # model par
@@ -379,7 +384,7 @@ dropbox_dir = '/Users/au710647/Desktop/Dropbox/cultural_loss_project/embers'
 periode = 4/time_step  # int(-time_step*np.log(kError)/halfLife)
 max_period = int(11/time_step)  # int(-time_step*np.log(kError)/halfLife)
 min_period = 2  # do never go below 1 for ressolution issues.
-step_period = (max_period - min_period)/22.
+step_period = (max_period - min_period)/55.
 periodes = np.arange(min_period, max_period, step_period)
 #print('peripperi', periodes)
 
@@ -410,7 +415,7 @@ falses_ratios = np.arange(min_falses, max_falses, step_falses)
 noiseLevel = 0.2
 max_noises = 5.1  # 0.0002  # 0.6#0.66
 min_noises = 0.1  # 0.0001
-step_noises = (max_noises - min_noises)/11.
+step_noises = (max_noises - min_noises)/55.
 noiseLevels = np.arange(min_noises, max_noises, step_noises)
 ##print('nisnosisnoise', noiseLevels)
 
@@ -450,13 +455,11 @@ def main():
     #trait_series, time_series = trait_evol(stocastic_dependence, var, par)
     #print(trait_series)
 
-    #
+    
     #len_data_series = explore_periode_range(var, par)
     #len_data_series = explore_noise_range(var, par)
     #len_data_series = explore_halfLife_range(var, par)
 
-
-    #multiplot_NxM(m, n, par, var, hist_bins)
 
     halfLife_values = [8, 10, 12, 16, 20, 24]
     halfLife_values = [4, 8, 10, 16, 20, 24]
@@ -471,22 +474,27 @@ def main():
     varNameS = 'pop'  # 'noiseLevel'  # 'periode'
     valuesS = pop_values
 
-    ###explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par)
-    ###psm.plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par)
+    #explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par)
+    #psm.plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par)
     analy = 'analy'
     name_mat = analy_explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par, analy)
     psm.plot_analy_survival_matrix(
         varNameY, valuesY, varNameX, valuesX, name_mat, var, par, analy)
+
     
 
     #multiexplore_twoVar_ranges(varNameX, valuesX,
     #                          varNameY, valuesY, varNameZ, valuesZ, var, par)
 
-    for v in valuesS:
-        name = nf.file_name_n_varValue(varNameS, v, var, par)
-        analy_multiexplore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, varNameZ, valuesZ, var, par, analy)
-    psm.colum_multiplot_analy_survivals(
-        varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, analy, var, par)
+    #for v in valuesS:
+    #    name = nf.file_name_n_varValue(varNameS, v, var, par)
+    #    analy_multiexplore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, varNameZ, valuesZ, var, par, analy)
+    #psm.colum_multiplot_analy_survivals(
+    #    varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, analy, var, par)
+    #psm.multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
+    #psm.multiplot_mxn_alber_survivals(
+    #    varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
+
     ###psm.multiplot_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, var, par)
 
     #multiplot_mxn_survivals(varNameY, valuesY, varNameX,

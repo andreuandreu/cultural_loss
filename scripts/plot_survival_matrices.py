@@ -7,40 +7,71 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import seaborn as sns
 import knode_decay as kd
 from matplotlib.ticker import MultipleLocator, FuncFormatter
+from matplotlib.ticker import MaxNLocator
 
 
 def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, var, par, analy=False):
 
     fig, ax = plt.subplots()
+    fs = 14
 
     analy_mat = np.load(name_mat)
 
     im = ax.pcolormesh(analy_mat,  cmap='OrRd')
 
+    
+  
+    fig.text(0.95, 0.5, r"$N_e(1Kyr)/N_e(0)$", va="center", rotation=-90, fontsize=fs)
+
+    print('xxxxxxxx', valuesX)
     tagX, labelsX = nf.var_tagAndLabels(varNameX, valuesX, var, par)
     tagY, labelsY = nf.var_tagAndLabels(varNameY, valuesY, var, par)
+
+    ax.set_ylabel(tagY, fontsize = fs)
+    ax.set_xlabel(tagX, fontsize=fs)
+
+
+
     
-    ax.set_ylabel(tagY)
-    ax.set_xlabel(tagX)
-
-
-    ax.set_xticks(np.arange(len(valuesX)))
-    ax.set_xticklabels(valuesX)
-    ax.set_yticks(np.arange(len(valuesY)))
-    ax.set_yticklabels(valuesY)
-    #ax.set_title(title)
-    x_locator = MultipleLocator(base=6)
-    y_locator = MultipleLocator(base=3)
-    ax.xaxis.set_major_locator(x_locator)
-    ax.yaxis.set_major_locator(y_locator)  
 
     # Format tick labels to display only one decimal place
-    def format_func(value, tick_number):
-        return f"{value:.1f}"
+    ax.set_xticks(np.arange(len(valuesX)))
+    labels_of_interest = []  # [str(i) for i in xLavels]
+    for i, l in enumerate(valuesX):
+        if i%5 == 2:
+            labels_of_interest = np.append(labels_of_interest, f"{l - valuesX[1]:.0f}")
+        else: 
+            labels_of_interest = np.append(labels_of_interest, '')
+
+    ax.set_xticklabels(labels_of_interest, fontsize=fs-1)
+    #ax.set_xticklabels(xLavels, fontsize=fs-1)
+
+    # Format tick labels to display only one decimal place and apear once every 5 values
+    ax.set_yticks(np.arange(len(valuesY)))
+    labels_of_interest = []
+    for i, l in enumerate(valuesY):
+        if i % 8 == 2:
+            labels_of_interest = np.append(
+                labels_of_interest, f"{100*(l-valuesY[1]):.0f}")
+        else:
+            labels_of_interest = np.append(labels_of_interest, '')
+    ax.set_yticklabels(labels_of_interest, fontsize=fs-1)
+
+    ax.tick_params(width=0, length=0)
+
+    #ax.set_title(title)
+    #x_locator = MultipleLocator(base=12)
+    #y_locator = MultipleLocator(base=8)
+    #ax.xaxis.set_major_locator(x_locator)
+    #ax.yaxis.set_major_locator(y_locator)  
+
+    #plt.yticks()
+
+    
 
 
-    ax.xaxis.set_major_formatter(FuncFormatter(format_func))
-    ax.yaxis.set_major_formatter(FuncFormatter(format_func))
+    #ax.xaxis.set_major_formatter(FuncFormatter(format_func))
+    #ax.yaxis.set_major_formatter(FuncFormatter(format_func))
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes('right', size='5%', pad=0.05)
@@ -49,6 +80,9 @@ def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, v
     to_modify = varNameX + '_' + varNameY
     name_fig = nf.name_survival_fig(
         to_modify, par.plots_survivalMat, var, par, analy)
+
+
+
 
 
 def colum_multiplot_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, analy, var, par, rows=1):
@@ -242,7 +276,7 @@ def prepare_mxn_figure(fig, rows, valuesX, valuesY, valuesS):
     poss = np.arange(0.75, 0, -1/(rows+2))
 
     for p, v in zip(poss, valuesS):
-        print('whaaaatTTTTT???', p, v)
+        #print('whaaaatTTTTT???', p, v)
         fig.text(0.92, p, str(v), va="center", fontsize=fs)
 
     textX = 'T ='
@@ -253,10 +287,11 @@ def prepare_mxn_figure(fig, rows, valuesX, valuesY, valuesS):
     for v in valuesY:
         textY = textY + "{:.1f}".format(v) + '   '
 
-    # fig.text(0.02, 0.02, textX + "[yr]", va="center", fontsize=fs-4)
+    fig.text(0.5, 0.02, r"$T$[yr]", va="center", fontsize=fs)
+    fig.text(0.02, 0.5, r"$T_{\epsilon}$ [%]", va="center", fontsize=fs)
 
 
-def multiplot_mxn_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS):
+def multiplot_mxn_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par):
 
     # create a figure and set the size
     cols = len(valuesZ)
@@ -274,7 +309,7 @@ def multiplot_mxn_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valu
     for i in range(len(labelsX)):
         if i % intervalX == 0:
             labelsX_short.append(labelsX[i])
-
+    
     count = 0
     for i in range(rows):
         name = nf.file_name_n_varValue(varNameS, valuesS[i])
@@ -290,6 +325,105 @@ def multiplot_mxn_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valu
                 axs[i, j].set_title(title)
             count += 1
     prepare_mxn_figure(f, rows, valuesX, valuesY, valuesS)
+
+
+def multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par):
+
+    # create a figure and set the size
+    cols = len(valuesZ)
+    rows = len(valuesS)
+    # row and column sharing
+    f, axs = plt.subplots(len(valuesS), len(valuesZ),
+                          sharex=True, sharey=True, gridspec_kw=dict(hspace=0))
+    f.subplots_adjust(wspace=0, hspace=0)
+
+    tagX, labelsX = nf.var_tagAndLabels(varNameX, valuesX, var, par)
+    tagY, labelsY = nf.var_tagAndLabels(varNameY, valuesY, var, par)
+
+    labelsX_short = []
+    intervalX = 3
+    for i in range(len(labelsX)):
+        if i % intervalX == 0:
+            labelsX_short.append(labelsX[i])
+    to_modify = varNameX + '_' + varNameY
+    count = 0
+    # Remove ticks from both x and y axes
+
+
+    for i in range(rows):
+        name = nf.file_name_n_varValue(varNameS, valuesS[i], var, par)
+        for j in range(cols):
+            name = nf.file_name_n_varValue(varNameZ, valuesZ[j], var, par) 
+            name_mat = nf.name_survival_ranges(
+                to_modify, 'mat_', var, par, 'analy') 
+            analy_mat = np.load(name_mat+'.npy')
+            im = axs[i,j].pcolormesh(analy_mat,  cmap='OrRd')
+
+            if i == 0:
+                title = nf.set_title_mat(varNameX, varNameY, j, cols, var, par)
+                axs[i, j].set_title(title)
+            
+            count += 1
+    plt.xticks([])
+    plt.yticks([])
+    prepare_mxn_figure(f, rows, valuesX, valuesY, valuesS)
+
+    name_fig = par.dropbox_dir + '/plots/fig3_mxn_mat/fig3-2_analy_' + \
+        str(len(var.periodes)) + 'x' + str(len(var.noiseLevels))
+    #name_fig = nf.name_survival_fig(
+    #    'pop_periode_halfLife_noiseLevel', par.dropbox_dir, var, par, 'analy')
+    plt.savefig(name_fig+'.svg', bbox_inches='tight')
+    plt.savefig(name_fig+'.png', bbox_inches='tight')
+    plt.savefig(name_fig+'.eps', bbox_inches='tight')
+
+
+def multiplot_mxn_alber_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par):
+
+    # create a figure and set the size
+    cols = len(valuesZ)
+    rows = len(valuesS)
+    # row and column sharing
+    f, axs = plt.subplots(len(valuesS), len(valuesZ),
+                          sharex=True, sharey=True, gridspec_kw=dict(hspace=0))
+    f.subplots_adjust(wspace=0, hspace=0)
+
+    tagX, labelsX = nf.var_tagAndLabels(varNameX, valuesX, var, par)
+    tagY, labelsY = nf.var_tagAndLabels(varNameY, valuesY, var, par)
+
+    labelsX_short = []
+    intervalX = 3
+    for i in range(len(labelsX)):
+        if i % intervalX == 0:
+            labelsX_short.append(labelsX[i])
+    to_modify = varNameX + '_' + varNameY
+    count = 0
+    # Remove ticks from both x and y axes
+
+    for i in range(rows):
+        name = nf.file_name_n_varValue(varNameS, valuesS[i], var, par)
+        for j in range(cols):
+            name = nf.file_name_n_varValue(varNameZ, valuesZ[j], var, par)
+            name_mat = nf.name_survival_ranges(
+                to_modify, 'mat_', var, par, 'alber')
+            analy_mat = np.load(name_mat+'.npy')
+            im = axs[i, j].pcolormesh(analy_mat,  cmap='OrRd')
+
+            if i == 0:
+                title = nf.set_title_mat(varNameX, varNameY, j, cols, var, par)
+                axs[i, j].set_title(title)
+
+            count += 1
+    plt.xticks([])
+    plt.yticks([])
+    prepare_mxn_figure(f, rows, valuesX, valuesY, valuesS)
+
+    name_fig = par.dropbox_dir + '/plots/fig3_mxn_mat/fig3-2_alber_' + \
+        str(len(var.periodes)) + 'x'+ str(len(var.noiseLevels))
+    #name_fig = nf.name_survival_fig(
+    #    'pop_periode_halfLife_noiseLevel', par.dropbox_dir, var, par, 'alber')
+    plt.savefig(name_fig+'.svg', bbox_inches='tight')
+    plt.savefig(name_fig+'.png', bbox_inches='tight')
+    plt.savefig(name_fig+'.eps', bbox_inches='tight')
 
 
 def multiplot_survivals_seaborn(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, var, par, rows=1):
