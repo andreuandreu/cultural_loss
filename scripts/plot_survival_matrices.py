@@ -28,18 +28,15 @@ def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, v
     tagY, labelsY = nf.var_tagAndLabels(varNameY, valuesY, var, par)
 
     ax.set_ylabel(tagY, fontsize = fs)
-    ax.set_xlabel(tagX, fontsize=fs)
+    ax.set_xlabel(tagX, fontsize = fs)
 
-
-
-    
 
     # Format tick labels to display only one decimal place
     ax.set_xticks(np.arange(len(valuesX)))
     labels_of_interest = []  # [str(i) for i in xLavels]
     for i, l in enumerate(valuesX):
         if i%5 == 2:
-            labels_of_interest = np.append(labels_of_interest, f"{l - valuesX[1]:.0f}")
+            labels_of_interest = np.append(labels_of_interest, f"{l + valuesX[0]:.0f}")
         else: 
             labels_of_interest = np.append(labels_of_interest, '')
 
@@ -52,7 +49,7 @@ def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, v
     for i, l in enumerate(valuesY):
         if i % 8 == 2:
             labels_of_interest = np.append(
-                labels_of_interest, f"{100*(l-valuesY[1]):.0f}")
+                labels_of_interest, f"{100*(l)- valuesY[1]:.0f}")
         else:
             labels_of_interest = np.append(labels_of_interest, '')
     ax.set_yticklabels(labels_of_interest, fontsize=fs-1)
@@ -147,6 +144,7 @@ def plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par, analy=
     #im = ax.imshowh(survival_rate,   extent=[
     #               x.min(), x.max(), y.max(), y.min()], cmap='OrRd')
     
+    print('mamamama', survival_rate)
     im = ax.pcolormesh(survival_rate, cmap='OrRd')
     # /np.log(100*var.noiseLevel)
     # ax.plot(var.periodes, -var.periodes/np.log2(1/(var.pop-1)))

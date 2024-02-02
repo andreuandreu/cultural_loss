@@ -46,6 +46,8 @@ def plot_stocastic_dependence(vector, var, par):
     # plt.tight_layout()
 
 
+
+
 def plot_traitTime_evol(trait_series, time_series,  var, par):
 
     # Create figure with two subplots

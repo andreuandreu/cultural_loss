@@ -258,7 +258,7 @@ def analy_explore_twoVar_ranges(varNameX, varRangeX, varNameY, varRangeY, var, p
     #print( f"Number of elements higher than {threshold_value}: {count_higher} out of {len(survival_mat.flatten())}")
     np.save(name_mat, survival_mat)
     np.save(name_mat_al, survival_mat_alber)
-    return name_mat
+    return name_mat, name_mat_al
         
 
     
@@ -391,7 +391,7 @@ periodes = np.arange(min_period, max_period, step_period)
 halfLife = float(sys.argv[2])  # 88#np.log(2)/periode  # 0.05  #
 max_halfLife = (20/time_step)  # int(-time_step*np.log(kError)/halfLife)
 min_halfLife = 2   # do never go below 1 for ressolution issues.
-step_halfLife = (max_halfLife - min_halfLife)/8.
+step_halfLife = (max_halfLife - min_halfLife)/5.
 halfLifes = np.arange(min_halfLife, max_halfLife, step_halfLife)
 #print('dededededekay', halfLifes)
 
@@ -400,7 +400,7 @@ k0 = 1  # initial knowledge
 kError = k0 * np.exp(-halfLife/(periode*time_step))  # 1/10.*k0
 min_kError = 0.01
 max_kError = 0.95
-step_kError = (max_kError - min_kError)/10
+step_kError = (max_kError - min_kError)/11
 kErrors = np.append(np.array([min_kError]), np.arange(
     min_kError, max_kError, step_kError))
 #print('kekekekkee', kErrors)
@@ -413,7 +413,7 @@ falses_ratios = np.arange(min_falses, max_falses, step_falses)
 #print('falsfalsfalse', falses_ratios)
 
 noiseLevel = 0.2
-max_noises = 5.1  # 0.0002  # 0.6#0.66
+max_noises = 2.1  # 0.0002  # 0.6#0.66
 min_noises = 0.1  # 0.0001
 step_noises = (max_noises - min_noises)/55.
 noiseLevels = np.arange(min_noises, max_noises, step_noises)
@@ -461,9 +461,9 @@ def main():
     #len_data_series = explore_halfLife_range(var, par)
 
 
-    halfLife_values = [8, 10, 12, 16, 20, 24]
-    halfLife_values = [4, 8, 10, 16, 20, 24]
-    pop_values = [ 3, 6, 12, 24, 50]
+    #halfLife_values = [8, 10, 12, 16, 20, 24]
+    halfLife_values = [4, 8, 12, 16, 20, 24]
+    pop_values = [ 3, 6, 12, 24, 48]
 
     varNameY = 'noiseLevel'  # 'noiseLevel'#'kError'  # 'noiseLevel'#  # 'false_ratio'#
     valuesY = var.noiseLevels #var.noiseLevels  # var.kErrors  #  # var.falses_ratios#
@@ -476,10 +476,15 @@ def main():
 
     #explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par)
     #psm.plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par)
-    analy = 'analy'
-    name_mat = analy_explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par, analy)
+    analy = ''
+    name_mat_analy, name_mat_albert = analy_explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par, analy)
     psm.plot_analy_survival_matrix(
-        varNameY, valuesY, varNameX, valuesX, name_mat, var, par, analy)
+        varNameY, valuesY, varNameX, valuesX, name_mat_albert, var, par, analy)
+    analy = 'analy'
+    psm.plot_analy_survival_matrix(
+        varNameY, valuesY, varNameX, valuesX, name_mat_analy, var, par, analy)
+    
+    
 
     
 
@@ -491,7 +496,7 @@ def main():
     #    analy_multiexplore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, varNameZ, valuesZ, var, par, analy)
     #psm.colum_multiplot_analy_survivals(
     #    varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, analy, var, par)
-    #psm.multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
+    psm.multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
     #psm.multiplot_mxn_alber_survivals(
     #    varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
 
