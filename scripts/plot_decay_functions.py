@@ -26,11 +26,11 @@ def plot_stocastic_dependence(vector, var, par):
     ax1.set_ylabel('Recurrent event')
     per_in_yr = var.periode*par.time_step
     # ax1.set_title('recurrence series $T = $' + "{:.1f}".format(per_in_yr) + \
-    #               '[yr] $T_{\epsilon} = $' + "{:.2}".format(var.false_ratio) + \
+    #               '[yr] $\sigma_{T} = $' + "{:.2}".format(var.false_ratio) + \
     #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $\tau =$' + \
     #              "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
     ax1.set_title('recurrence series $T = $' + "{:.1f}".format(per_in_yr) +
-                  '[yr] $T_{\epsilon} = $' + "{:.2}".format(var.noiseLevel) +
+                  '[yr] $\sigma_{T} = $' + "{:.2}".format(var.noiseLevel) +
                   ' $N_e = $' + "{:d}".format(var.pop) + r' $\tau =$' +
                   "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
 
@@ -53,11 +53,11 @@ def plot_traitTime_evol(trait_series, time_series,  var, par):
     # Create figure with two subplots
     fig, (ax1, ax2) = plt.subplots(2, 1)
 
-    # ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '[yr] $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
+    # ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '[yr] $\sigma_{T}= $' + "{:.2f}".format(var.noiseLevel) +
     #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' r$\tau =$' + "{:.1f}".format(var.halfLife) + '[yr]')
 
     ax1.set_title('$T =$' + "{:.2f}".format(var.periode) +
-                  '[yr] $T_{\epsilon} =$' + "{:.2f}".format(var.noiseLevel) +
+                  '[yr] $\sigma_{T} =$' + "{:.2f}".format(var.noiseLevel) +
                   ' $N_e =$' + "{:d}".format(var.pop) +
                   r' $\tau =$' + "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
 
@@ -83,11 +83,11 @@ def plot_traitTime_evol_and_noise_sequence(trait_series, noisy_dependence, var, 
     fs = 18
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True,  gridspec_kw=dict(hspace=0))
 
-    # ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '[yr] $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
+    # ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '[yr] $\sigma_{T}= $' + "{:.2f}".format(var.noiseLevel) +
     #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' r$\tau =$' + "{:.1f}".format(var.halfLife) + '[yr]')
 
     ax1.set_title('$T =$' + "{:.2f}".format(var.periode) +
-                  '[yr] $T_{\epsilon} =$' + "{:.2f}".format(var.noiseLevel) +
+                  '[yr] $\sigma_{T} =$' + "{:.2f}".format(var.noiseLevel) +
                   ' $N_e =$' + "{:d}".format(var.pop) +
                   r' $\tau =$' + "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
 
@@ -126,11 +126,11 @@ def plot_traitTime_evol_and_noise_sequence(trait_series, noisy_dependence, var, 
 def plot_multiple_traitTime_evol(ax1, ax2, trait_series, time_series, var, par, alpha, lw=0.3):
 
     # Plot time series of boolean vector
-    # ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '$[t_s]$ $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
+    # ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '$[t_s]$ $\sigma_{T}= $' + "{:.2f}".format(var.noiseLevel) +
     #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t12 =$' + "{:.1f}".format(var.halfLife))
 
     ax1.set_title('$T= $' + "{:.2f}".format(var.periode) +
-                  '$[t_s]$ $T_{\epsilon}= $' + "{:.2f}".format(var.noiseLevel) +
+                  '$[t_s]$ $\sigma_{T}= $' + "{:.2f}".format(var.noiseLevel) +
                   ' $N_e = $' + "{:d}".format(var.pop) +
                   ' r$\tau =$' + "{:.1f}".format(var.halfLife*par.time_step))
 

@@ -177,7 +177,7 @@ def var_tagAndLabels(varName, values, var, par):
             labels.append("{:.2}".format(e))
 
     elif varName == 'noiseLevel':
-        tag = '$T_{\epsilon}$[%]'
+        tag = '$\sigma_{T}$[%]'
         for e in values:
             labels.append("{:.2}".format(e))
 
@@ -202,7 +202,7 @@ def set_title_mat(varNameX, varNameY, num, maxNum, var, par):
         else:
             return "{:4.0f}".format(var.halfLife*par.time_step)
     elif varNameX == 'periode' and varNameY == 'halfLife':
-        return '$T_{\epsilon}$ = ' + "{:2.1f}".format(100*var.noiseLevel) + '[%]'
+        return '$\sigma_{T}$ = ' + "{:2.1f}".format(100*var.noiseLevel) + '[%]'
     elif varNameX == 'noiseLevel' and varNameY == 'halfLife':
         if num == 0:
             return '$T$ = ' + "{:d}".format(var.periode)

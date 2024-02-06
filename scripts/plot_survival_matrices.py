@@ -161,7 +161,7 @@ def plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par, analy=
     #       yticks=np.arange(len(valuesY)), yticklabels=labelsY)
 
     # title = r'$\tau$ = ' + "{:4.0f}".format(var.halfLife*par.time_step) + '[yr]'
-    title = '$T_{\epsilon}$ = ' + \
+    title = '$\sigma_{T}$ = ' + \
         "{:3.3f}".format(var.noiseLevel) + '[%]'
     ax.set_ylabel(tagY)
     ax.set_xlabel(tagX)
@@ -281,12 +281,12 @@ def prepare_mxn_figure(fig, rows, valuesX, valuesY, valuesS):
     for v in valuesX:
         textX = textX + "{:.1f}".format(v) + '   '
 
-    textY = 'T_{\epsilon} ='
+    textY = '\sigma_{T} ='
     for v in valuesY:
         textY = textY + "{:.1f}".format(v) + '   '
 
     fig.text(0.5, 0.02, r"$T$[yr]", va="center", fontsize=fs)
-    fig.text(0.02, 0.5, r"$T_{\epsilon}$ [%]", va="center", fontsize=fs)
+    fig.text(0.02, 0.5, r"$\sigma_{T}$ [%]", va="center", fontsize=fs)
 
 
 def multiplot_mxn_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par):

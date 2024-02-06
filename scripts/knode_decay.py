@@ -247,7 +247,7 @@ def analy_explore_twoVar_ranges(varNameX, varRangeX, varNameY, varRangeY, var, p
             p_surb = scipy.stats.norm(var.periode, var.noiseLevel*var.periode).cdf(ts_death)
             
             cumulat_p_surb = p_surb**(par.vector_length/var.periode)
-            n_frac_alber = an.countTempFracasos(
+            n_frac_alber = an.countTempPositiveFracasos(
                 par.Nrealizations, var.periode, 0, var.noiseLevel*var.periode, par.vector_length/var.periode, ts_death)
             #print(var.periode, var.noiseLevel, 'dedede', cumulat_p_surb)
             survival_mat[i, j] = cumulat_p_surb
@@ -370,9 +370,9 @@ has to occur in order for the trait to remain "knowlwgelable" onside of the knod
 hist_bins = 18
 
 # numerical par
-time_step = 0.5
+time_step = 1
 Nrealizations = 111
-vector_length = 2000
+vector_length = int(1000/time_step)
 
 # model par
 output_dir = './data/output/'
@@ -381,7 +381,7 @@ plots_dir = './plots/embers/'
 plots_survivalMat = 'fig_survivalMatrix/'
 dropbox_dir = '/Users/au710647/Desktop/Dropbox/cultural_loss_project/embers'
 
-periode = 4/time_step  # int(-time_step*np.log(kError)/halfLife)
+periode = 8/time_step  # int(-time_step*np.log(kError)/halfLife)
 max_period = int(11/time_step)  # int(-time_step*np.log(kError)/halfLife)
 min_period = 2  # do never go below 1 for ressolution issues.
 step_period = (max_period - min_period)/55.
@@ -412,7 +412,7 @@ step_falses = (max_falses - min_falses)/1.
 falses_ratios = np.arange(min_falses, max_falses, step_falses)
 #print('falsfalsfalse', falses_ratios)
 
-noiseLevel = 0.2
+noiseLevel = 0.3
 max_noises = 2.1  # 0.0002  # 0.6#0.66
 min_noises = 0.1  # 0.0001
 step_noises = (max_noises - min_noises)/55.
@@ -428,8 +428,7 @@ pops = np.arange(min_pop, max_pop, step_pop)
 
 
 def main():
-
-
+    ##python knode_decay.py th_pop1 11 44
     var = modelVar(periode, false_ratio, halfLife, kError, k0)
     par = modelPar(time_step, vector_length, Nrealizations)
     #plot_Period_halfLife_dep(var, par)
@@ -439,27 +438,28 @@ def main():
     noisy_dependence = create_stocastic_dependence(
         var, par)  # create_noisy_period_series(var, par)
     pdf.plot_stocastic_dependence(noisy_dependence, var, par)
-    
-    
     #noisy_dependence =  create_noisy_period_series(var, par)
     
     k_series_set, Dt_series_set, len_series_set, one_stocastic_dependence, one_trait_series, one_time_series =\
         multiple_noiseRealizations(var, par)
+    
+    fracasos, E_series, events = an.countFracasos(par.Nrealizations, var.periode, 0, var.noiseLevel*var.periode, int(par.vector_length/var.periode), 100, var.pop, var.halfLife)
+     
     pdf.plot_stocastic_dependence(one_stocastic_dependence, var, par)
     pdf.plot_traitTime_evol(one_trait_series, one_time_series, var, par)
     pdf.plot_traitTime_evol_and_noise_sequence(
         one_trait_series, one_stocastic_dependence, var, par)
+    pdf.plot_traitTime_evol_and_noise_sequence(
+        E_series, events, var, par)
     values = rle(noisy_dependence)
     #print('valval', values, sum(values[0])) 
     
     #trait_series, time_series = trait_evol(stocastic_dependence, var, par)
     #print(trait_series)
 
-    
     #len_data_series = explore_periode_range(var, par)
     #len_data_series = explore_noise_range(var, par)
     #len_data_series = explore_halfLife_range(var, par)
-
 
     #halfLife_values = [8, 10, 12, 16, 20, 24]
     halfLife_values = [4, 8, 12, 16, 20, 24]
@@ -474,39 +474,37 @@ def main():
     varNameS = 'pop'  # 'noiseLevel'  # 'periode'
     valuesS = pop_values
 
+    ''' Here to plot a matrix with failure simulation '''
     #explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par)
     #psm.plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par)
+    
+    ''' Here to plot a matrix with simulation and analyitical'''
     analy = ''
-    name_mat_analy, name_mat_albert = analy_explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par, analy)
-    psm.plot_analy_survival_matrix(
-        varNameY, valuesY, varNameX, valuesX, name_mat_albert, var, par, analy)
-    analy = 'analy'
-    psm.plot_analy_survival_matrix(
-        varNameY, valuesY, varNameX, valuesX, name_mat_analy, var, par, analy)
+    #name_mat_analy, name_mat_albert = analy_explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par, analy)
+    #psm.plot_analy_survival_matrix(
+    #    varNameY, valuesY, varNameX, valuesX, name_mat_albert, var, par, analy)
+    #analy = 'analy'
+    #psm.plot_analy_survival_matrix(
+    #    varNameY, valuesY, varNameX, valuesX, name_mat_analy, var, par, analy)
     
-    
-
-    
-
     #multiexplore_twoVar_ranges(varNameX, valuesX,
     #                          varNameY, valuesY, varNameZ, valuesZ, var, par)
 
+    ''' Here to plot the grid of matrixes with simulation and analyitical'''
     #for v in valuesS:
     #    name = nf.file_name_n_varValue(varNameS, v, var, par)
     #    analy_multiexplore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, varNameZ, valuesZ, var, par, analy)
     #psm.colum_multiplot_analy_survivals(
     #    varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, analy, var, par)
-    psm.multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
+    #psm.multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
     #psm.multiplot_mxn_alber_survivals(
     #    varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
 
-    ###psm.multiplot_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, var, par)
+    #psm.multiplot_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, var, par)
 
     #multiplot_mxn_survivals(varNameY, valuesY, varNameX,
     #                        valuesX, varNameZ, valuesZ, varNameS, valuesS)
 
-    #multiplot_survivals_seaborn(varNameY, valuesY, varNameX,
-    #                            valuesX, varNameZ, valuesZ)
 
     #plot_threshold_functions_preiode(var, par)
     #plot_threshold_functions_halfLife(var, par)

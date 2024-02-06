@@ -11,15 +11,13 @@ from numba import jit, float64, types, int64, bool_
 def build_train_pulses(ts, E0, tau, L2):
 
     #time_array = np.linspace(0, ts, L2)
-    time_array = np.arange(0, ts, 0.5)
-    E_values = E0 * np.exp(-time_array/(tau))
+    time_array = np.arange(0, ts, 1)
+    E_values = E0 * np.exp(-time_array/(tau/2))
 
     if E_values[-1] < 1:
         E_values[-1] = 0
-    else:
-        E_values[-1] = E0
-
-    
+    #else:
+    #    E_values[-1] = E0
 
     return E_values, time_array
 
@@ -27,13 +25,13 @@ def build_train_pulses(ts, E0, tau, L2):
 
 
 #@jit(types.Tuple((int64, int64))(int64, float64, float64, float64, int64, int64, float64, float64), nopython=True, fastmath=True)
-def countFracasos(nTimes, T, mu, sigma, L, L2, E0, tau):
+def countFracasos(nTimes, T, mu, sigma, nPer, L2, E0, tau):
     fracasos = 0
 
-    E_values_serie = [0]
+    E_values_serie = [E0]
     time_array_serie = [0]
     for i in range(0, nTimes):
-        ts_dist =  np.random.normal(T, sigma, L)
+        ts_dist =  np.random.normal(T, sigma, nPer)
 
         aux = np.where(ts_dist > 0)
         positive_ts_dist = ts_dist[aux]
@@ -45,14 +43,30 @@ def countFracasos(nTimes, T, mu, sigma, L, L2, E0, tau):
             if i == 1:
                 E_values_serie = np.append(E_values_serie, E_values)
                 time_array_serie = np.append(time_array_serie, t_values + time_array_serie[-1] ) 
-            
+
             if E_values[-1] == 0:
                 fracasos += 1
                 break
 
-            
+    aux = np.where(E_values_serie == E0)
+    events = np.zeros(len(E_values_serie))
+    events[aux] = 1
 
-    return fracasos,  E_values_serie, time_array_serie
+    return fracasos, E_values_serie[1:], events[1:]
+
+
+def generateDecaySeries(eventsTimes, L2, E0, tau):
+    fracasos = 0
+
+    E_values_serie = [E0]
+    for t in  eventsTimes:
+        E_values, t_values = build_train_pulses(t, E0, tau, L2)
+        E_values_serie = np.append(E_values_serie, E_values) 
+
+        if len(E_values_serie) > 2000:
+            break
+    
+    return E_values_serie
 
 
 @jit((int64)(int64, float64, float64, float64, int64, float64), nopython=True, fastmath=True)
@@ -68,8 +82,10 @@ def countTempFracasos(nTimes, T, mu, sigma, Nper, t_death):
             
     return fracasos
 
-@jit((int64)(int64, float64, float64, float64, int64, float64), nopython=True, fastmath=True)
-def countTempPositiveFracasos(nTimes, T, mu, sigma, Nper, t_death):
+#    v_I = np.empty((enum, bnum), dtype=np.float64)
+
+@jit((int64)(int64, float64, float64, float64, int64, float64, int64), nopython=True, fastmath=True)
+def countTempPositiveFracasos(nTimes, T, mu, sigma, Nper, t_death, timeLim):
     fracasos = 0
     timeLength = 0
     for i in range(0, nTimes):
@@ -81,7 +97,7 @@ def countTempPositiveFracasos(nTimes, T, mu, sigma, Nper, t_death):
             if ts >= t_death:
                 fracasos += 1
                 break
-            if timeLength > 1000:
+            if timeLength > timeLim:
                 break
             
     return fracasos
@@ -232,12 +248,12 @@ def plot_exp_dec(tau, E0):
     #plt.hist(distances, bins=11)
     ax.set_ylabel('$N_e(t)$', fontsize = 13)
     ax.set_xlabel('t[yr]', fontsize = 13)
-    ax.plot()
+
 
 def main():
 
     mu = 0
-    T = 7
+    T = 4
     L = 1000
     L2 = 100
     sigma = 2 * T
@@ -245,7 +261,7 @@ def main():
    
     Nper = int(L/T)+L2
 
-    tau = 12
+    tau = 4.5
 
     E0 = 44
     plot_exp_dec(T, E0)
@@ -255,9 +271,10 @@ def main():
 
     nTimes = 1000
 
-    fracasos, E_series, t_series = countFracasos(nTimes, T, mu, sigma, Nper, L2, E0, tau)
+    fracasos, E_series= countFracasos(nTimes, T, mu, sigma, Nper, L2, E0, tau)
     fracasosTemp = countTempFracasos(nTimes, T, mu, sigma, Nper, t_death)
-    fracasosPosTemp = countTempPositiveFracasos(nTimes, T, mu, sigma, Nper, t_death)
+    fracasosPosTemp = countTempPositiveFracasos(nTimes, T, mu, sigma, Nper, t_death, L)
+    #E_series = generateDecaySeries(ts_dist_pos, L2, E0, tau)
     #print('sim Frac', fracasos/nTimes, 'Surb', 1-fracasos/nTimes)
     print('simTim Frac', fracasosTemp/nTimes, 'Surb', 1-fracasosTemp/nTimes)
     print('simPosTim Frac', fracasosPosTemp/nTimes, 'Surb', 1-fracasosPosTemp/nTimes)
@@ -271,8 +288,13 @@ def main():
     p_death = 1- p_surb
 
     fig, ax = plt.subplots()
-    print('t_series',len(t_series), len(E_series))
-    ax.plot(t_series, E_series) 
+    print('t_series', len(E_series))
+    #ax.plot(ts_dist_pos[1:], E_series[1:]) 
+    ax.plot(E_series) 
+
+    ax.plot(events)
+
+    print()
     #plt.show()
 
     
@@ -295,8 +317,6 @@ def main():
     print('\nsim Var Frac', fracasosTempVar/nTimes, 'Surb', 1-fracasosTempVar/nTimes)
     print('analy Var Frac', 1-cumulat_p_surb_var, 'surb', cumulat_p_surb_var, '\n')
 
-    
-
     fracasos_fail = create_stocastic_dependence(nTimes, false_ratio, T, L, t_death)
     death_gap = int(t_death/T)
     
@@ -310,9 +330,11 @@ def main():
     binomial_pmf = binom.pmf(1, L, p_death)
     print(binomial_pmf)
     '''
-    # plt.plot(t_trajectory[1:], E_trajectory)
+    #plt.plot(t_trajectory[1:], E_trajectory)
     # plt.axhline(y=1, c = 'r', ls = '--')
-    # plt.show()
+    plt.show()
+
+
 
 
 if __name__ == '__main__':
