@@ -6,8 +6,8 @@ def file_name_n_varValue(to_modify, value, var, par, analy = ''):
     if to_modify == 'periode':
         var.periode = value
         
-    elif to_modify == 'halfLife':
-        var.halfLife = value
+    elif to_modify == 'tau':
+        var.tau = value
         
     elif to_modify == 'false_ratio':
         var.false_ratio = value
@@ -22,7 +22,7 @@ def file_name_n_varValue(to_modify, value, var, par, analy = ''):
         var.pop = value
         
     else:
-        print('wrong to modify name argumetn!!! be carefull, only options are periode, halfLife, false_ratio, kError')
+        print('wrong to modify name argumetn!!! be carefull, only options are periode, tau, false_ratio, kError')
         quit()
    
 
@@ -35,7 +35,7 @@ def file_name_n_varValue(to_modify, value, var, par, analy = ''):
     name = path + analy +\
     'T='   + "{:.2f}".format(var.periode) + \
     '_Te=' + "{:.2f}".format(var.noiseLevel) + \
-    '_t12='+ "{:.1f}".format(var.halfLife)+ \
+    '_t12='+ "{:.1f}".format(var.tau)+ \
     '_Ep=' + "{:d}".format(var.pop) + '.npy'  # + str(var.kError)
     #print('HELOOO????', name)
     return name
@@ -50,12 +50,12 @@ def name_survival_fig(to_modify, root_fig, var, par, analy=''):
     else:
         periode_seg = '_T-' + "{:.2f}".format(var.periode)
 
-    if 'halfLife' in periode_seg:
-        halfLife_seg = '_t12ran-' + \
-            "{:.1f}".format(var.halfLifes[0]) + \
-            '-'+"{:.1f}".format(var.halfLifes[-1])
+    if 'tau' in periode_seg:
+        tau_seg = '_t12ran-' + \
+            "{:.1f}".format(var.taus[0]) + \
+            '-'+"{:.1f}".format(var.taus[-1])
     else:
-        halfLife_seg = '_t12-' + "{:.1f}".format(var.halfLife)
+        tau_seg = '_t12-' + "{:.1f}".format(var.tau)
 
     if 'false_ratio' in to_modify:
         false_ratio_seg = '_FRran-' + \
@@ -101,7 +101,7 @@ def name_survival_fig(to_modify, root_fig, var, par, analy=''):
         os.makedirs(path)
 
     name_fig = path + 'fig' + periode_seg + \
-        noiseLevel_seg + halfLife_seg   # + kError_seg  +
+        noiseLevel_seg + tau_seg   # + kError_seg  +
     print('nonanonaonaoa', name_fig)
 
     return name_fig
@@ -115,10 +115,10 @@ def name_survival_ranges(to_modify, root_fig, var, par, analy = ''):
     else:
         periode_seg = '_T-' + "{:.2f}".format(var.periode)
 
-    if 'halfLife' in periode_seg:
-        halfLife_seg = '_t12ran-'+"{:.1f}".format(var.halfLifes[0])+'-'+"{:.1f}".format(var.halfLifes[-1])
+    if 'tau' in periode_seg:
+        tau_seg = '_t12ran-'+"{:.1f}".format(var.taus[0])+'-'+"{:.1f}".format(var.taus[-1])
     else:
-        halfLife_seg = '_t12-' + "{:.1f}".format(var.halfLife)
+        tau_seg = '_t12-' + "{:.1f}".format(var.tau)
 
     if 'noiseLevel' in to_modify:
         noiseLevel_seg = '_TNran-'+"{:.2f}".format(var.noiseLevels[0])+'-'+"{:.2f}".format(var.noiseLevels[-1])
@@ -151,7 +151,7 @@ def name_survival_ranges(to_modify, root_fig, var, par, analy = ''):
     if not os.path.exists(path):
         os.makedirs(path)
 
-    name_ran = path + periode_seg + noiseLevel_seg + halfLife_seg + pop_seg
+    name_ran = path + periode_seg + noiseLevel_seg + tau_seg + pop_seg
 
     return name_ran 
 
@@ -165,14 +165,14 @@ def var_tagAndLabels(varName, values, var, par):
         for e in values:
             labels.append("{:.0f}".format(e*par.time_step))
 
-    elif varName == 'halfLife':
+    elif varName == 'tau':
         tag = 'r$\tau$[yr]'
         # tag = '$\lambda$[yr$^-1$]'
         for e in values:
             labels.append("{:.2f}".format(par.time_step*e))
 
     elif varName == 'false_ratio':
-        tag = '$T_f$[%]'
+        tag = '$F$[%]'
         for e in values:
             labels.append("{:.2}".format(e))
 
@@ -186,7 +186,7 @@ def var_tagAndLabels(varName, values, var, par):
         for e in values:
             labels.append("{:.2f}".format(e))
     else:
-        print('wrong to modify name argumetn!!! be carefull, only options are periode, halfLife, false_ratio, kError')
+        print('wrong to modify name argumetn!!! be carefull, only options are periode, tau, false_ratio, kError')
         quit()
 
     return tag, labels
@@ -196,14 +196,14 @@ def set_title_mat(varNameX, varNameY, num, maxNum, var, par):
 
     if varNameX == 'periode' and varNameY == 'noiseLevel':
         if num == 0:
-            return r'$\tau$ = ' + "{:4.0f}".format(var.halfLife*par.time_step)
+            return r'$\tau$ = ' + "{:4.0f}".format(var.tau*par.time_step)
         elif num == maxNum-1:
-            return "{:4.0f}".format(var.halfLife*par.time_step) + '[yr]'
+            return "{:4.0f}".format(var.tau*par.time_step) + '[yr]'
         else:
-            return "{:4.0f}".format(var.halfLife*par.time_step)
-    elif varNameX == 'periode' and varNameY == 'halfLife':
+            return "{:4.0f}".format(var.tau*par.time_step)
+    elif varNameX == 'periode' and varNameY == 'tau':
         return '$\sigma_{T}$ = ' + "{:2.1f}".format(100*var.noiseLevel) + '[%]'
-    elif varNameX == 'noiseLevel' and varNameY == 'halfLife':
+    elif varNameX == 'noiseLevel' and varNameY == 'tau':
         if num == 0:
             return '$T$ = ' + "{:d}".format(var.periode)
         elif num == maxNum-1:
@@ -211,7 +211,7 @@ def set_title_mat(varNameX, varNameY, num, maxNum, var, par):
         else:
             return "{:d}".format(var.periode)
     else:
-        print('wrong to modify name argumetn!!! be carefull, only options are periode, halfLife, false_ratio, kError')
+        print('wrong to modify name argumetn!!! be carefull, only options are periode, tau, false_ratio, kError')
         quit()
 
 

@@ -18,7 +18,7 @@ import scipy.stats
 
 
 class modelVar:
-    def __init__(self, periode, false_ratio, halfLife, kError, k0):
+    def __init__(self, periode, false_ratio, tau, kError, k0):
         self.periode = periode
         self.periodes= periodes
 
@@ -31,8 +31,8 @@ class modelVar:
         self.pop = pop
         self.pops = pops
 
-        self.halfLife = halfLife
-        self.halfLifes = halfLifes
+        self.tau = tau
+        self.taus = taus
 
         self.kError = kError
         self.kErrors = kErrors
@@ -53,37 +53,37 @@ class modelPar:
 def which_threshlod(var, par):
 
     if 'th-2t12' in par.root:
-        return k0 * 2**(-2*var.halfLife/(var.periode ))
+        return k0 * 2**(-2*var.tau/(var.periode ))
     elif 'th_pop' in par.root:
         return k0 * int(1/var.pop)
     elif 'th_pop1' in par.root:
         return k0 * 1
     elif 'th-t12' in par.root:
-        return k0 * 2**(-var.halfLife/(var.periode))
+        return k0 * 2**(-var.tau/(var.periode))
     elif 'th-tau' in par.root:
-        return k0 * np.exp(-var.halfLife*np.log(2)/(var.periode ))
+        return k0 * np.exp(-var.tau*np.log(2)/(var.periode ))
     elif 'th-2tau' in par.root:
-        return k0 * np.exp(-2*var.halfLife*np.log(2)/(var.periode ))
+        return k0 * np.exp(-2*var.tau*np.log(2)/(var.periode ))
     elif 'th-e(-Tts)-1' in par.root:
         return k0 * np.exp(-1/(var.periode*par.time_step ))
     elif 'th-e(-t12ts)-1' in par.root:
-        return k0 * np.exp(-1/(var.halfLife*par.time_step))
+        return k0 * np.exp(-1/(var.tau*par.time_step))
     elif 'th_1-e(-Tts)-1' in par.root:
         return k0 * (1- np.exp(-1/(var.periode*par.time_step)))
     elif 'th_1-e(-ts)-1' in par.root:
-        return k0 * (1 - np.exp(-1/(var.halfLife*0.5)))
+        return k0 * (1 - np.exp(-1/(var.tau*0.5)))
     elif 'th_1-e(-t12T)' in par.root:
-        return k0 * ( 1- np.exp(-var.halfLife/(var.periode)))
+        return k0 * ( 1- np.exp(-var.tau/(var.periode)))
     elif 'th_e(-t12T)' in par.root:
-        return k0 * (np.exp(-var.halfLife/(var.periode)))
+        return k0 * (np.exp(-var.tau/(var.periode)))
     elif 'th_e(-t12T)' in par.root:
-        return k0 * (1-np.exp(-var.halfLife/(var.periode)))
+        return k0 * (1-np.exp(-var.tau/(var.periode)))
     elif 'th_2(-Tt12)' in par.root:
-        return k0 * (2**(-var.periode/(var.halfLife)))
+        return k0 * (2**(-var.periode/(var.tau)))
     elif 'th_1-2(-Tt12)' in par.root:
-        return k0 * (1-2**(-var.periode/(var.halfLife)))
+        return k0 * (1-2**(-var.periode/(var.tau)))
     elif 'th_1-2(-t12ts)' in par.root:
-        return k0 * (1-2**(-1/(var.halfLife*par.time_step)))
+        return k0 * (1-2**(-1/(var.tau*par.time_step)))
     elif 'th_05' in par.root:
         return k0 * 0.5
     elif 'th_01' in par.root:
@@ -125,19 +125,19 @@ def trait_evol( stocastic_dependence, var, par):
         while i < len(stocastic_dependence)-1 and stocastic_dependence[i] == 0 and kt[i] > threshold: 
             t = t + time_step
             i = i+1
-            #kt.append(kt[i-1]*np.exp(-t*var.halfLife))
-            #kt.append(k0*np.exp(-t/(par.time_step*var.halfLife*np.log(2))))
-            k = k0*np.exp(-t/(par.time_step*var.halfLife*np.log(2)))
+            #kt.append(kt[i-1]*np.exp(-t*var.tau))
+            #kt.append(k0*np.exp(-t/(par.time_step*var.tau*np.log(2))))
+            k = k0*np.exp(-t/(par.time_step*var.tau))#*np.log(2)
             discrete_k = int(var.pop * k)#/var.pop
             kt.append(discrete_k)
             kt_norm.append(discrete_k/var.pop)
-            #kt.append(k0*2**(-t/(par.time_step*var.halfLife)))
+            #kt.append(k0*2**(-t/(par.time_step*var.tau)))
         
             time_vec.append(t)
             #if i > 998:
             #    print('tttt it ended!', t, kt[i])
             
-        if kt[i] > threshold:  # var.kError:
+        if kt[i] > threshold: 
             kt.append(var.k0*var.pop)
             kt_norm.append(var.k0)
             time_vec.append(par.time_step)
@@ -197,6 +197,35 @@ def create_noisy_period_series(var, par):
     return stocastic_dependence
 
 
+def count_peridod_failure(var, par):
+
+    # Create boolean vector
+    stocastic_dependence = np.zeros(par.vector_length)  # , dtype=bool
+
+    indexes = np.arange(0, par.vector_length, var.periode)
+    #noise = np.random.random(len(indexes))*var.noiseLevel
+    #print('is this raaaaight/?', var.noiseLevel)
+    noise = np.random.normal(
+        loc=0, scale=var.noiseLevel*var.periode, size=len(indexes))
+
+    #print('nonononono', var.periode, len(indexes),
+    #      len(noise), par.vector_length)
+    #index = np.where((noise.astype('int') + indexes)  % var.periode == 0)
+
+    sum = noise.astype('int') + indexes.astype('int')
+    index = np.where((sum >= 0) & (sum < par.vector_length))
+    
+    #print('ufff', var.periode, (
+    # noise.astype('int')[:10] + indexes[:10]))
+    #print('inininin', index[:10])
+    stocastic_dependence[sum[index]] = 1.
+
+    return stocastic_dependence
+
+
+
+
+
 def explore_oneVar_range(varName, varRange, var, par):
 
     len_data_series = []
@@ -221,7 +250,7 @@ def explore_twoVar_ranges(varNameX, varRangeX, varNameY, varRangeY, var, par ):
         name = nf.file_name_n_varValue(varNameY, v, var, par)
         if os.path.exists(name):
             break
-        print('name var', varNameY, 'val', v)
+        #print('name var', varNameY, 'val', v)
         explore_oneVar_range(varNameX, varRangeX, var, par)
 
 
@@ -243,12 +272,12 @@ def analy_explore_twoVar_ranges(varNameX, varRangeX, varNameY, varRangeY, var, p
         for j, v2 in enumerate(varRangeX):
             n = nf.file_name_n_varValue(varNameX, v2, var, par, analy)
             #par.periode = v2
-            ts_death = np.log(var.pop)*var.halfLife
+            ts_death = np.log(var.pop)*var.tau
             p_surb = scipy.stats.norm(var.periode, var.noiseLevel*var.periode).cdf(ts_death)
             
             cumulat_p_surb = p_surb**(par.vector_length/var.periode)
             n_frac_alber = an.countTempPositiveFracasos(
-                par.Nrealizations, var.periode, 0, var.noiseLevel*var.periode, par.vector_length/var.periode, ts_death)
+                par.Nrealizations, var.periode, 0, var.noiseLevel*var.periode, par.vector_length/var.periode, ts_death, par.vector_length)
             #print(var.periode, var.noiseLevel, 'dedede', cumulat_p_surb)
             survival_mat[i, j] = cumulat_p_surb
             survival_mat_alber[i, j] = 1-n_frac_alber/par.Nrealizations
@@ -260,6 +289,41 @@ def analy_explore_twoVar_ranges(varNameX, varRangeX, varNameY, varRangeY, var, p
     np.save(name_mat_al, survival_mat_alber)
     return name_mat, name_mat_al
         
+def periodMiss_twoVar_ranges(varNameX, varRangeX, varNameY, varRangeY, var, par):
+
+    rows = len(varRangeY)
+    cols = len(varRangeX)
+    survival_mat = np.empty((rows, cols))
+    to_modify = varNameX +'_'+ varNameY
+    name_mat = nf.name_survival_ranges( to_modify, 'mat_', var, par, 'periodMiss') + '.npy'
+    
+    ts_death = np.log(var.pop)*var.tau
+
+    print ('\n ts_death', ts_death, '\n')
+    for i, v1 in enumerate(varRangeY):
+        #if os.path.exists(name_mat):
+        #    break
+        n = nf.file_name_n_varValue(varNameY, v1, var, par)
+        
+        
+        for j, v2 in enumerate(varRangeX):
+            n = nf.file_name_n_varValue(varNameX, v2, var, par)
+            #par.periode = v2
+            
+
+            #print('nper, ', int(par.vector_length/var.periode))
+            
+            failures = an.countPeriodFailures(par.Nrealizations, par.vector_length, 
+                                              var.periode, var.false_ratio, ts_death)
+            
+            survival_mat[i, j] = 1-failures/par.Nrealizations
+            
+    np.save(name_mat, survival_mat)
+    print('mamammiss', survival_mat)
+    return name_mat
+        
+
+
 
     
 def explore_periode_range(var, par):
@@ -296,15 +360,14 @@ def explore_noise_range(var, par):
 
     return len_data_series
 
-def explore_halfLife_range(var, par):
+def explore_tau_range(var, par):
 
 
-    for n in var.halfLifes:
+    for n in var.taus:
         print('ddddddd', n)
-        var.halfLife = n
+        var.tau = n
 
         explore_periode_range(var, par)
-
     return 
 
 
@@ -360,7 +423,7 @@ def a_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par):
 
 # python scripts/knode_decay.py 'th_1-e(-Tts)-1' 44
 '''
-what would be, eventually, a trait halfLife inside a knode, this code shall be eficient, fast, repeated
+what would be, eventually, a trait tau inside a knode, this code shall be eficient, fast, repeated
 
 called "drifwood model" as it tries to model what is the threshold that the presence of a resouce/dependence
 has to occur in order for the trait to remain "knowlwgelable" onside of the knode
@@ -371,8 +434,8 @@ hist_bins = 18
 
 # numerical par
 time_step = 1
-Nrealizations = 111
-vector_length = int(1000/time_step)
+Nrealizations = 1111
+vector_length = int(330/time_step)
 
 # model par
 output_dir = './data/output/'
@@ -381,23 +444,23 @@ plots_dir = './plots/embers/'
 plots_survivalMat = 'fig_survivalMatrix/'
 dropbox_dir = '/Users/au710647/Desktop/Dropbox/cultural_loss_project/embers'
 
-periode = 8/time_step  # int(-time_step*np.log(kError)/halfLife)
-max_period = int(11/time_step)  # int(-time_step*np.log(kError)/halfLife)
+periode = 4/time_step  # int(-time_step*np.log(kError)/tau)
+max_period = int(25/time_step)  # int(-time_step*np.log(kError)/tau)
 min_period = 2  # do never go below 1 for ressolution issues.
 step_period = (max_period - min_period)/55.
 periodes = np.arange(min_period, max_period, step_period)
 #print('peripperi', periodes)
 
-halfLife = float(sys.argv[2])  # 88#np.log(2)/periode  # 0.05  #
-max_halfLife = (20/time_step)  # int(-time_step*np.log(kError)/halfLife)
-min_halfLife = 2   # do never go below 1 for ressolution issues.
-step_halfLife = (max_halfLife - min_halfLife)/5.
-halfLifes = np.arange(min_halfLife, max_halfLife, step_halfLife)
-#print('dededededekay', halfLifes)
+tau = float(sys.argv[2])  # 88#np.log(2)/periode  # 0.05  #
+max_tau = (20/time_step)  # int(-time_step*np.log(kError)/tau)
+min_tau = 2   # do never go below 1 for ressolution issues.
+step_tau = (max_tau - min_tau)/5.
+taus = np.arange(min_tau, max_tau, step_tau)
+#print('dededededekay', taus)
 
 
 k0 = 1  # initial knowledge
-kError = k0 * np.exp(-halfLife/(periode*time_step))  # 1/10.*k0
+kError = k0 * np.exp(-tau/(periode*time_step))  # 1/10.*k0
 min_kError = 0.01
 max_kError = 0.95
 step_kError = (max_kError - min_kError)/11
@@ -406,9 +469,9 @@ kErrors = np.append(np.array([min_kError]), np.arange(
 #print('kekekekkee', kErrors)
 
 false_ratio = 0.11
-max_falses = 0.02  # 0.6#0.66
+max_falses = 0.9  # 0.6#0.66
 min_falses = 0.01
-step_falses = (max_falses - min_falses)/1.
+step_falses = (max_falses - min_falses)/55.
 falses_ratios = np.arange(min_falses, max_falses, step_falses)
 #print('falsfalsfalse', falses_ratios)
 
@@ -429,28 +492,27 @@ pops = np.arange(min_pop, max_pop, step_pop)
 
 def main():
     ##python knode_decay.py th_pop1 11 44
-    var = modelVar(periode, false_ratio, halfLife, kError, k0)
+    var = modelVar(periode, false_ratio, tau, kError, k0)
     par = modelPar(time_step, vector_length, Nrealizations)
-    #plot_Period_halfLife_dep(var, par)
+    #plot_Period_tau_dep(var, par)
 
-    #stocastic_dependence =  create_stocastic_dependence(var, par)
-    ### noisy dependence erases 1 every n events in a perfect period ###
-    noisy_dependence = create_stocastic_dependence(
-        var, par)  # create_noisy_period_series(var, par)
+
+    ''' noisy dependence erases 1 every n events in a perfect period '''
+    noisy_dependence = create_stocastic_dependence( var, par)  
     pdf.plot_stocastic_dependence(noisy_dependence, var, par)
     #noisy_dependence =  create_noisy_period_series(var, par)
     
     k_series_set, Dt_series_set, len_series_set, one_stocastic_dependence, one_trait_series, one_time_series =\
         multiple_noiseRealizations(var, par)
     
-    fracasos, E_series, events = an.countFracasos(par.Nrealizations, var.periode, 0, var.noiseLevel*var.periode, int(par.vector_length/var.periode), 100, var.pop, var.halfLife)
+    #fracasos, E_series, events = an.countFracasos(par.Nrealizations, var.periode, 0, var.noiseLevel*var.periode, int(par.vector_length/var.periode), 100, var.pop, var.tau)
      
     pdf.plot_stocastic_dependence(one_stocastic_dependence, var, par)
     pdf.plot_traitTime_evol(one_trait_series, one_time_series, var, par)
     pdf.plot_traitTime_evol_and_noise_sequence(
         one_trait_series, one_stocastic_dependence, var, par)
-    pdf.plot_traitTime_evol_and_noise_sequence(
-        E_series, events, var, par)
+    #pdf.plot_traitTime_evol_and_noise_sequence(
+    #    E_series, events, var, par)
     values = rle(noisy_dependence)
     #print('valval', values, sum(values[0])) 
     
@@ -459,38 +521,49 @@ def main():
 
     #len_data_series = explore_periode_range(var, par)
     #len_data_series = explore_noise_range(var, par)
-    #len_data_series = explore_halfLife_range(var, par)
+    #len_data_series = explore_tau_range(var, par)
 
-    #halfLife_values = [8, 10, 12, 16, 20, 24]
-    halfLife_values = [4, 8, 12, 16, 20, 24]
+    #tau_values = [8, 10, 12, 16, 20, 24]
+    #tau_values = [4, 8, 12, 16, 20]
+    tau_values = [1, 2, 4, 8, 16]
     pop_values = [ 3, 6, 12, 24, 48]
 
     varNameY = 'noiseLevel'  # 'noiseLevel'#'kError'  # 'noiseLevel'#  # 'false_ratio'#
     valuesY = var.noiseLevels #var.noiseLevels  # var.kErrors  #  # var.falses_ratios#
     varNameX = 'periode'  # 'noiseLevel'  # 'periode'
     valuesX =  var.periodes#
-    varNameZ = 'halfLife'  # 'noiseLevel'  # 'periode'
-    valuesZ = var.halfLifes
-    varNameS = 'pop'  # 'noiseLevel'  # 'periode'
+    varNameZ = 'tau'  # 'noiseLevel'  # 'periode'
+    valuesZ = var.taus
+    varNameS = 'pop'  
     valuesS = pop_values
+    varNameM = 'false_ratio'  
+    valuesM = var.falses_ratios
 
     ''' Here to plot a matrix with failure simulation '''
     #explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par)
     #psm.plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par)
+
+    ''' Here to plot a matrix of period misses'''
+    name_mat_perMiss = periodMiss_twoVar_ranges(varNameX, valuesX, varNameM, valuesM, var, par)
+    #psm.plot_survival_martrix(varNameM, valuesM, varNameX, valuesX, var, par)
+    psm.plot_analy_survival_matrix(
+       varNameM, valuesM, varNameX, valuesX, name_mat_perMiss, var, par, '')
     
-    ''' Here to plot a matrix with simulation and analyitical'''
-    analy = ''
+    ''' Here to plot a matrix with simulatiocountPeriodFailuresn and analyitical'''
+    #analy = ''
     #name_mat_analy, name_mat_albert = analy_explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par, analy)
     #psm.plot_analy_survival_matrix(
     #    varNameY, valuesY, varNameX, valuesX, name_mat_albert, var, par, analy)
-    #analy = 'analy'
+    analy = 'analy'
     #psm.plot_analy_survival_matrix(
     #    varNameY, valuesY, varNameX, valuesX, name_mat_analy, var, par, analy)
     
+    ''' Here to plot the grid of matrices with my method'''
     #multiexplore_twoVar_ranges(varNameX, valuesX,
     #                          varNameY, valuesY, varNameZ, valuesZ, var, par)
 
-    ''' Here to plot the grid of matrixes with simulation and analyitical'''
+    ''' Here to plot the grid of matrices with simulation and analyitical'''
+    
     #for v in valuesS:
     #    name = nf.file_name_n_varValue(varNameS, v, var, par)
     #    analy_multiexplore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, varNameZ, valuesZ, var, par, analy)
@@ -499,19 +572,17 @@ def main():
     #psm.multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
     #psm.multiplot_mxn_alber_survivals(
     #    varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
-
     #psm.multiplot_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, var, par)
-
     #multiplot_mxn_survivals(varNameY, valuesY, varNameX,
     #                        valuesX, varNameZ, valuesZ, varNameS, valuesS)
 
 
     #plot_threshold_functions_preiode(var, par)
-    #plot_threshold_functions_halfLife(var, par)
+    #plot_threshold_functions_tau(var, par)
     #max_death_interval(var, par)
     #plot_threshold_functions_preiode()
     #k_series_set, Dt_series_set, len_series_set = multiple_realizations(
-    #    Nrealizations, time_step, k0,  kError, periode, false_ratio,  halfLife)
+    #    Nrealizations, time_step, k0,  kError, periode, false_ratio,  tau)
     #plot_multiple_noiseRealizations(k_series_set, Dt_series_set, len_series_set)
 
 

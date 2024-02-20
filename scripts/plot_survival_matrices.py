@@ -10,6 +10,7 @@ from matplotlib.ticker import MultipleLocator, FuncFormatter
 from matplotlib.ticker import MaxNLocator
 
 
+
 def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, var, par, analy=False):
 
     fig, ax = plt.subplots()
@@ -19,9 +20,8 @@ def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, v
 
     im = ax.pcolormesh(analy_mat,  cmap='OrRd')
 
-    
-  
-    fig.text(0.95, 0.5, r"$N_e(1Kyr)/N_e(0)$", va="center", rotation=-90, fontsize=fs)
+    #fig.text(0.95, 0.5, r"$N_e(1Kyr)/N_e(0)$", va="center", rotation=-90, fontsize=fs)
+    fig.text(0.95, 0.5, r"$P_s$", va="center", rotation=-90, fontsize=fs)
 
     print('xxxxxxxx', valuesX)
     tagX, labelsX = nf.var_tagAndLabels(varNameX, valuesX, var, par)
@@ -36,7 +36,8 @@ def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, v
     labels_of_interest = []  # [str(i) for i in xLavels]
     for i, l in enumerate(valuesX):
         if i%5 == 2:
-            labels_of_interest = np.append(labels_of_interest, f"{l + valuesX[0]:.0f}")
+            #labels_of_interest = np.append(labels_of_interest, f"{l + valuesX[0]:.0f}")
+            labels_of_interest = np.append(labels_of_interest, f"{l :.0f}")
         else: 
             labels_of_interest = np.append(labels_of_interest, '')
 
@@ -56,7 +57,9 @@ def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, v
 
     ax.tick_params(width=0, length=0)
 
-    #ax.set_title(title)
+    t_th =  np.log(var.pop)*var.tau
+    title = '$\Delta t_{th}$ = ' + f"{t_th:.1f}"
+    ax.set_title(title)
     #x_locator = MultipleLocator(base=12)
     #y_locator = MultipleLocator(base=8)
     #ax.xaxis.set_major_locator(x_locator)
@@ -139,7 +142,7 @@ def plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par, analy=
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes('right', size='5%', pad=0.05)
-    x, y = np.meshgrid(var.periodes, var.halfLifes)
+    x, y = np.meshgrid(var.periodes, var.taus)
     # extent = extent, 'bone'
     #im = ax.imshowh(survival_rate,   extent=[
     #               x.min(), x.max(), y.max(), y.min()], cmap='OrRd')
@@ -151,16 +154,16 @@ def plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par, analy=
     # ax.plot(var.periodes, -var.periodes/np.log(1/(var.pop-1)))
     # ax.plot(var.periodes, var.periodes/np.log(2))
     # for e in var.noiseLevels:
-    #    ax.plot(var.periodes, var.halfLifes*e/np.log(2))
-    # ax.plot(var.periode, var.halfLife)
-    # ax.plot(var.periode, var.halfLife*var.noiseLevel)
+    #    ax.plot(var.periodes, var.taus*e/np.log(2))
+    # ax.plot(var.periode, var.tau)
+    # ax.plot(var.periode, var.tau*var.noiseLevel)
     tagX, labelsX = nf.var_tagAndLabels(varNameX, valuesX, var, par)
     tagY, labelsY = nf.var_tagAndLabels(varNameY, valuesY, var, par)
 
     # ax.set(xticks=np.arange(len(valuesX)), xticklabels=labelsX,
     #       yticks=np.arange(len(valuesY)), yticklabels=labelsY)
 
-    # title = r'$\tau$ = ' + "{:4.0f}".format(var.halfLife*par.time_step) + '[yr]'
+    # title = r'$\tau$ = ' + "{:4.0f}".format(var.tau*par.time_step) + '[yr]'
     title = '$\sigma_{T}$ = ' + \
         "{:3.3f}".format(var.noiseLevel) + '[%]'
     ax.set_ylabel(tagY)
@@ -240,8 +243,8 @@ def multiplot_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ,
     # for i in range(rows):
     for j in range(cols):
         name = nf.file_name_n_varValue(varNameZ, valuesZ[j], var, par)
-        # if varNameZ == 'halfLife':
-        #    var.halfLife = valuesZ[j]
+        # if varNameZ == 'tau':
+        #    var.tau = valuesZ[j]
 
         survival_rate = kd.a_survival_martrix(
             varNameY, valuesY, varNameX, valuesX, var, par)
@@ -369,7 +372,7 @@ def multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ
     name_fig = par.dropbox_dir + '/plots/fig3_mxn_mat/fig3-2_analy_' + \
         str(len(var.periodes)) + 'x' + str(len(var.noiseLevels))
     #name_fig = nf.name_survival_fig(
-    #    'pop_periode_halfLife_noiseLevel', par.dropbox_dir, var, par, 'analy')
+    #    'pop_periode_tau_noiseLevel', par.dropbox_dir, var, par, 'analy')
     plt.savefig(name_fig+'.svg', bbox_inches='tight')
     plt.savefig(name_fig+'.png', bbox_inches='tight')
     plt.savefig(name_fig+'.eps', bbox_inches='tight')
@@ -418,7 +421,7 @@ def multiplot_mxn_alber_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ
     name_fig = par.dropbox_dir + '/plots/fig3_mxn_mat/fig3-2_alber_' + \
         str(len(var.periodes)) + 'x'+ str(len(var.noiseLevels))
     #name_fig = nf.name_survival_fig(
-    #    'pop_periode_halfLife_noiseLevel', par.dropbox_dir, var, par, 'alber')
+    #    'pop_periode_tau_noiseLevel', par.dropbox_dir, var, par, 'alber')
     plt.savefig(name_fig+'.svg', bbox_inches='tight')
     plt.savefig(name_fig+'.png', bbox_inches='tight')
     plt.savefig(name_fig+'.eps', bbox_inches='tight')
@@ -462,7 +465,7 @@ def plot_max_death_interval(var, par):
     n_max_mat = []
     for e in var.kErrors:
         n_max_row = []
-        for l in var.halfLifes:
+        for l in var.taus:
             n_max_row.append(par.time_step * np.log(var.k0/e)/l)
         n_max_mat.append(n_max_row)
 
@@ -476,11 +479,11 @@ def plot_max_death_interval(var, par):
     n_max_mat[aux] = 86
 
     # im = ax.imshow(n_max_mat, cmap='bone')  # extent = extent, 'bone'
-    x_tic_labels = np.log(2)*par.time_step/var.halfLifes
+    x_tic_labels = np.log(2)*par.time_step/var.taus
     im = ax.contourf(x_tic_labels, var.kErrors, n_max_mat,
                      extend="both", cmap='bone')
 
-    tagX, labelsX = nf.var_tagAndLabels('halfLife', var.halfLifes, var, par)
+    tagX, labelsX = nf.var_tagAndLabels('tau', var.taus, var, par)
     tagY, labelsY = nf.var_tagAndLabels('kError', var.kErrors, var, par)
 
     labelsX_short = []
@@ -495,7 +498,7 @@ def plot_max_death_interval(var, par):
         if i % intervalY == 0:
             labelsY_short.append(labelsY[i])
 
-    # ax.set(xticks=np.arange(0, len(var.halfLifes), intervalX), xticklabels=labelsX_short,
+    # ax.set(xticks=np.arange(0, len(var.taus), intervalX), xticklabels=labelsX_short,
     #       yticks=np.arange(0, len(var.kErrors), intervalY), yticklabels=labelsY_short)
 
     ax.set_ylabel(tagY)

@@ -28,11 +28,11 @@ def plot_stocastic_dependence(vector, var, par):
     # ax1.set_title('recurrence series $T = $' + "{:.1f}".format(per_in_yr) + \
     #               '[yr] $\sigma_{T} = $' + "{:.2}".format(var.false_ratio) + \
     #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $\tau =$' + \
-    #              "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
+    #              "{:.1f}".format(var.tau*par.time_step) + '[yr]')
     ax1.set_title('recurrence series $T = $' + "{:.1f}".format(per_in_yr) +
                   '[yr] $\sigma_{T} = $' + "{:.2}".format(var.noiseLevel) +
                   ' $N_e = $' + "{:d}".format(var.pop) + r' $\tau =$' +
-                  "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
+                  "{:.1f}".format(var.tau*par.time_step) + '[yr]')
 
     # Plot power spectrum of boolean vector
     x_scale = np.arange(2*par.vector_length/var.periode) * \
@@ -54,12 +54,12 @@ def plot_traitTime_evol(trait_series, time_series,  var, par):
     fig, (ax1, ax2) = plt.subplots(2, 1)
 
     # ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '[yr] $\sigma_{T}= $' + "{:.2f}".format(var.noiseLevel) +
-    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' r$\tau =$' + "{:.1f}".format(var.halfLife) + '[yr]')
+    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' r$\tau =$' + "{:.1f}".format(var.tau) + '[yr]')
 
     ax1.set_title('$T =$' + "{:.2f}".format(var.periode) +
                   '[yr] $\sigma_{T} =$' + "{:.2f}".format(var.noiseLevel) +
                   ' $N_e =$' + "{:d}".format(var.pop) +
-                  r' $\tau =$' + "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
+                  r' $\tau =$' + "{:.1f}".format(var.tau*par.time_step) + '[yr]')
 
     # Plot time series of boolean vector
     ax1.plot(np.arange(len(trait_series))*par.time_step, trait_series)
@@ -84,18 +84,18 @@ def plot_traitTime_evol_and_noise_sequence(trait_series, noisy_dependence, var, 
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True,  gridspec_kw=dict(hspace=0))
 
     # ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '[yr] $\sigma_{T}= $' + "{:.2f}".format(var.noiseLevel) +
-    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' r$\tau =$' + "{:.1f}".format(var.halfLife) + '[yr]')
+    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' r$\tau =$' + "{:.1f}".format(var.tau) + '[yr]')
 
     ax1.set_title('$T =$' + "{:.2f}".format(var.periode) +
                   '[yr] $\sigma_{T} =$' + "{:.2f}".format(var.noiseLevel) +
                   ' $N_e =$' + "{:d}".format(var.pop) +
-                  r' $\tau =$' + "{:.1f}".format(var.halfLife*par.time_step) + '[yr]')
+                  r' $\tau =$' + "{:.1f}".format(var.tau*par.time_step) + '[yr]')
 
     # Plot time series of boolean vector
     ax1.plot(np.arange(len(trait_series))*par.time_step, trait_series)  #
 
     ax1.hlines(y=0, xmin=0, xmax=len(trait_series)*par.time_step,
-               ls='--', linewidth=1.2, color='k')
+               ls='--', linewidth=0.8, color='k')
     # ax1.set_xlabel('time')
     ax1.set_ylabel('$N_e(t)/N^0_e$')
 
@@ -104,7 +104,7 @@ def plot_traitTime_evol_and_noise_sequence(trait_series, noisy_dependence, var, 
     for i,l in enumerate(noisy_dependence[:len(trait_series)]):
         if l == 1:
             ax2.vlines(x=i*par.time_step, ymin=0, ymax=1,
-                ls='-', linewidth=2.5, color='r')
+                ls='-', linewidth=1.1, color='r')
     
     #ax2.plot(np.arange(len(trait_series))*par.time_step,
     #    noisy_dependence[:len(trait_series)])  # 
@@ -127,12 +127,12 @@ def plot_multiple_traitTime_evol(ax1, ax2, trait_series, time_series, var, par, 
 
     # Plot time series of boolean vector
     # ax1.set_title('$T= $' + "{:.2f}".format(var.periode) + '$[t_s]$ $\sigma_{T}= $' + "{:.2f}".format(var.noiseLevel) +
-    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t12 =$' + "{:.1f}".format(var.halfLife))
+    #              ' $k_{\epsilon} = $' + "{:.2}".format(var.kError) + ' $t12 =$' + "{:.1f}".format(var.tau))
 
     ax1.set_title('$T= $' + "{:.2f}".format(var.periode) +
                   '$[t_s]$ $\sigma_{T}= $' + "{:.2f}".format(var.noiseLevel) +
                   ' $N_e = $' + "{:d}".format(var.pop) +
-                  ' r$\tau =$' + "{:.1f}".format(var.halfLife*par.time_step))
+                  ' r$\tau =$' + "{:.1f}".format(var.tau*par.time_step))
 
     ax1.plot(np.arange(len(trait_series))*par.time_step,
              trait_series, color='orange', lw=lw, alpha=alpha)
@@ -174,16 +174,16 @@ def plot_multiple_noiseRealizations(k_series_set, Dt_series_set, len_series_set,
     ax3.set_ylabel('periode')
 
 
-def plot_Period_halfLife_dep(var, par):
+def plot_Period_tau_dep(var, par):
     fig, ax = plt.subplots()
 
     a1 = 1/np.logspace(0, 3, 4)
     a2 = np.arange(0.001, -np.log(var.kError), 1)
-    log_halfLife_range = np.outer(a1, a2).flatten()*par.time_step
-    print('halfLifes', log_halfLife_range*par.time_step)
-    Tmax = - np.log(var.kError)/log_halfLife_range
+    log_tau_range = np.outer(a1, a2).flatten()*par.time_step
+    print('taus', log_tau_range*par.time_step)
+    Tmax = - np.log(var.kError)/log_tau_range
     # print('Tmaxssss', Tmax)
-    ax.scatter(log_halfLife_range, Tmax)
+    ax.scatter(log_tau_range, Tmax)
     ax.set_xscale("log")
     ax.set_yscale("log")
 
@@ -208,19 +208,19 @@ def plot_threshold_functions_preiode(var, par):
     ax.set_xlabel('$T$')
 
 
-def plot_threshold_functions_halfLife(var, par):
+def plot_threshold_functions_tau(var, par):
     fig, ax = plt.subplots()
 
-    threshold1 = 2**(-1/(var.halfLifes))
-    threshold2 = 1-2**(-1/(var.halfLifes*par.time_step))
-    threshold05 = 2**(-par.time_step/(var.halfLifes))
+    threshold1 = 2**(-1/(var.taus))
+    threshold2 = 1-2**(-1/(var.taus*par.time_step))
+    threshold05 = 2**(-par.time_step/(var.taus))
 
     # ax.plot(periodes, threshold1, c='y', label ='exp(-1/T)')
     # ax.plot(periodes, threshold2, c='g',  label='exp(-1/(T*ts))')
     # ax.plot(periodes, threshold05, c='r', label='exp(-ts/T)')
 
     # ax.plot(periodes, 1-threshold1, c='m', label='1-exp(-1/T)')
-    ax.plot(var.halfLifes, threshold2, c='b',  label=r'$1-2^{-1/\tau}$')
+    ax.plot(var.taus, threshold2, c='b',  label=r'$1-2^{-1/\tau}$')
     # ax.plot(periodes, 1-threshold05, c='c', label='1-exp(-ts/T)')
 
     ax.legend(frameon=False)
@@ -232,9 +232,9 @@ def plot_threshold_functions_halfLife(var, par):
 def plot_threshold_function(var, par):
 
     threshold_mat = []
-    for h in var.halfLifes:
+    for h in var.taus:
         threshold_row = []
-        var.halfLife = h
+        var.tau = h
         for l in var.periodes:
             var.periode = l
             threshold = kd.which_threshlod(var, par)
@@ -251,14 +251,14 @@ def plot_threshold_function(var, par):
     # n_max_mat[aux] = 86
 
     # im = ax.imshow(n_max_mat, cmap='bone')  # extent = extent, 'bone'
-    im = ax.contourf(var.periodes, var.halfLifes, threshold_mat,
+    im = ax.contourf(var.periodes, var.taus, threshold_mat,
                      extend="both", cmap='bone')
 
     tagX, labelsX = nf.var_tagAndLabels('periode', var.periodes)
-    tagY, labelsY = nf.var_tagAndLabels('halfLife', var.halfLifes)
+    tagY, labelsY = nf.var_tagAndLabels('tau', var.taus)
 
     # ax.set(xticks=np.arange(len(var.periodes)), xticklabels=labelsX,
-    #       yticks=np.arange(len(var.halfLifes)), yticklabels=labelsY)
+    #       yticks=np.arange(len(var.taus)), yticklabels=labelsY)
 
     ax.set_ylabel(tagY)
     ax.set_xlabel(tagX)
