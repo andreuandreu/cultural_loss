@@ -1,0 +1,7 @@
+Brotli @ file:///private/tmp/python-brotli-20231117-5377-1dmlxkj/Brotli-1.1.0
+contourpy @ file:///private/tmp/python-matplotlib--contourpy-20240215-9387-hej8ra/contourpy-1.2.0
+cycler @ file:///private/tmp/python-cycler-20231117-4861-1sdjsnw/cycler-0.12.1
+matplotlib @ file:///private/tmp/python-matplotlib-20240215-9387-7mmn7f/matplotlib-3.8.3
+packaging @ file:///private/tmp/python-packaging-20231211-10905-adsfgp/packaging-23.2
+setuptools @ file:///private/tmp/python-setuptools-20240223-4585-1z5qt4/setuptools-69.1.1
+wheel @ file:///opt/homebrew/Cellar/python%403.12/3.12.2_1/libexec/wheel-0.42.0-py3-none-any.whl#sha256=5f1ca525bef7466225922019d72cb06a9e91cd3ff807ddd4be1acb84655e5107

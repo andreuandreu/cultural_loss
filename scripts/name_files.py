@@ -1,7 +1,12 @@
 import os
 
 
+
 def file_name_n_varValue(to_modify, value, var, par, analy = ''):
+
+    path = par.output_dir + par.root + '_ts='+str(par.time_step) + '_L=' + str(par.vector_length) + '/'
+    if not os.path.exists(path):
+        os.makedirs(path)
 
     if to_modify == 'periode':
         var.periode = value
@@ -20,17 +25,19 @@ def file_name_n_varValue(to_modify, value, var, par, analy = ''):
 
     elif to_modify == 'pop':
         var.pop = value
+
+    elif to_modify == 'tDeath':
+        var.tDeath = value
+        name = path + analy +\
+        'T='   + "{:.2f}".format(var.periode) + \
+        '_Te=' + "{:.2f}".format(var.noiseLevel) + \
+        '_tth='+ "{:.1f}".format(var.tau) + '.npy'
+        return name
         
     else:
-        print('wrong to modify name argumetn!!! be carefull, only options are periode, tau, false_ratio, kError')
+        print('wrong to modify name argument!!! be careful, only options are periode, tau, false_ratio, kError, pop, tDeath')
         quit()
    
-
-    path = par.output_dir + par.root + '_ts='+str(par.time_step) + '_L=' + str(par.vector_length) + '/'
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-  
 
     name = path + analy +\
     'T='   + "{:.2f}".format(var.periode) + \
@@ -137,6 +144,8 @@ def name_survival_ranges(to_modify, root_fig, var, par, analy = ''):
     else:
         pop_seg = '_pop-' + "{:d}".format(var.pop)
 
+    
+
     if analy == '':
         path = par.plots_dir + root_fig + par.root +\
             '_ts=' + str(par.time_step) +\
@@ -147,6 +156,14 @@ def name_survival_ranges(to_modify, root_fig, var, par, analy = ''):
             '_ts=' + str(par.time_step) +\
             '_L='+str(par.vector_length) + \
             '_'+ analy +'/mat'
+    
+    if 'tDeath' in to_modify:
+        tdeath_seg = '_tthRan-' + \
+            "{:.1f}".format(var.tDeaths[0])+'-' + \
+            "{:.1f}".format(var.tDeaths[-1])
+        name_ran = path + periode_seg + noiseLevel_seg + tdeath_seg
+        return name_ran
+        
 
     if not os.path.exists(path):
         os.makedirs(path)

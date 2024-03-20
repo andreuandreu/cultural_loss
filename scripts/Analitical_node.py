@@ -291,8 +291,8 @@ def heatmap(data, row_labels, col_labels, ax=None,
 
 
     # Create colorbar
-    cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
-    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom", )
+    #cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    #cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom", )
 
     # Show all ticks and label them with the respective list entries.
     col_labels_str = []
@@ -313,12 +313,12 @@ def heatmap(data, row_labels, col_labels, ax=None,
     # Turn spines off and create white grid.
     ax.spines[:].set_visible(False)
 
-    ax.set_xticks(np.arange(data.shape[1]+1)-.5, minor=True)
+    ax.set_xticks(np.arange(data.shape[1]+1)-.48, minor=True)
     ax.set_yticks(np.arange(data.shape[0]+1)-.5, minor=True)
-    ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
+    ax.grid(which="minor", color="w", linestyle='-', linewidth=4)
     ax.tick_params(which="minor", bottom=False, left=False)
 
-    return im, cbar
+    return im#, cbar
 
 
 def annotate_heatmap(im, data=None, valfmt="{x:.0f}",
@@ -388,51 +388,154 @@ def tdeathMat(E0s, taus):
 
     return t_deathMat 
 
+def threshold_vs_NnTau(E0s, taus):
 
 
+    t_deathN = np.log(E0s) * 4
+    t_deathTau = np.log(12) * taus
 
-def plot_tDeathMat(E0_max, tau_max):
-   
-    E0s = np.arange(2,E0_max, 4)
-    taus = np.arange(1, tau_max, (tau_max)/len(E0s))
-    t_deathMat  = tdeathMat(E0s, taus)
+    return t_deathN, t_deathTau
+
+def plot_CPR_decay():
 
     fig, ax = plt.subplots()
+
+
+    survival = [100, 50.9, 34.0, 30.9, 14.8]
+    time = [0, 4.2, 7, 9.7, 12.4]
+
+    ax.set_ylabel(r'surb')
+    ax.set_xlabel(r't')
+
+    ax.plot(time, survival)
+
+
+
+
+
+
+def plot_tDeathMat(E0s, taus, name_fig, w, h, dpi):
+   
+    t_deathMat  = tdeathMat(E0s, taus)
+
+    #fig, ax = plt.subplots()
+
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+
+    fig.set_size_inches(w,h)
+
     #ax.matshow(t_deathMat, cmap=plt.cm.Blues)
 
+    t_deathN, t_deathTau = threshold_vs_NnTau(E0s, taus)
 
-    im, cbar = heatmap( t_deathMat, E0s, taus, ax=ax,
-                    cmap="YlGn", cbarlabel="$\Delta t_{th} [yr]$")#"{taus:.0f}"
-    
-    
+    im = heatmap(t_deathMat, E0s, taus, ax=ax1,
+                    cmap="YlGn", cbarlabel="$\Delta t_{th} [yr]$")#"{taus:.0f}", cbar
     valmt = {'float_kind':lambda x: "%.0f" % x}#np.array2string(t_deathMat, precision=1)#f"{t_deathMat:.1f}"
     texts = annotate_heatmap(im, data=t_deathMat, valfmt="{x:.0f}")
- 
 
+    ax1.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
+    ax1.set_ylabel('$N_e(0)$', fontsize = 10)
+    ax1.set_xlabel(r'$\tau $[yr]', fontsize = 10)
+    ax1.xaxis.set_label_position('top') 
+    
 
-    #im = ax.imshow(t_deathMat, cmap=plt.cm.Blues)
+    ax2.plot(taus, t_deathTau, color = 'orange', lw = 1.5, label = r'$N_e$ = 12')
+    ax2.set_xlabel(r'$\tau $[yr]', fontsize = 10)
+    ax2.set_ylabel(r'$\Delta t_{max}$', fontsize = 10)
+    ax2.legend(frameon=False)
 
-    # Show all ticks and label them with the respective list entries
-    #ax.set_xticks(np.arange(len(taus)), labels=taus)
-    #ax.set_yticks(np.arange(len(E0s)), labels=E0s)
+    ax3.plot(E0s, t_deathN, color = 'b'  ,  lw = 1.5, label = r'$\tau$ = 4')
+    ax3.set_xlabel('$N_e(0)$', fontsize = 10)
+    ax3.set_ylabel(r'$\Delta t_{max}$', fontsize = 10)
+    ax3.legend(frameon=False)
 
-    # Rotate the tick labels and set their alignment.
-    #plt.setp(ax.get_xticklabels(), ha="right")
+    fig.delaxes(ax4)
 
-    # Loop over data dimensions and create text annotations.
-    #for i in range(len(taus)-1):
-    #    for j in range(len(E0s)-1):
-    #        text = ax.text(j, i, int(t_deathMat[i, j]),
-    #                    ha="center", va="center", color="w")
-
-    #ax.set_title("threshold matrix")
-    #fig.tight_layout()
-
-    ax.set_ylabel('$N_e(t)$', fontsize = 10)
-    ax.set_xlabel(r'$\tau $[yr]', fontsize = 10)
+    plt.savefig(name_fig+'.svg', bbox_inches='tight', dpi=dpi)
+    plt.savefig(name_fig+'.png', bbox_inches='tight', dpi=dpi)
+    plt.savefig(name_fig+'.tiff', bbox_inches='tight', dpi=dpi)
+    plt.savefig(name_fig+'.eps', bbox_inches='tight', dpi=dpi)
     
     #plt.annotate('$\Delta t_{th}$', xy=(t_death/2, E0-3), fontsize = 13)
     
+def plot_tau_N_dep():
+
+    fig, ax = plt.subplots()
+    # Define the range of N(0)_e values
+    N0_e_values = np.linspace(1, 100, 300)  # Adjust the range as needed
+
+    # Calculate tau values for each N(0)_e value
+    tau1_values = 1 / np.log(N0_e_values)
+    tau2_values = 60 / np.log(N0_e_values)
+    tau3_values = 4 / np.log(N0_e_values)
+
+  
+    ax.set_yscale('log')
+
+    #for a, d in zip(np.logspace(0.01, 0.85, 300)[::-1]/ 10., np.logspace(np.log10(1), np.log10(59), 300)):
+    #    tau = d / np.log(N0_e_values)
+    #    ax.plot(N0_e_values, tau, lw = 1.5, color= 'lightgreen', alpha = a)
+
+    #ax.plot(N0_e_values, tau1_values, lw = 2.5, color = 'm', label=r'$\Delta t_{th}$ = 1[yr]')
+    ax.plot(N0_e_values, tau2_values, lw = 2.5, color = 'orange', ls = '--', label=r'$\Delta t_{th}$ = 60[yr]')
+    #ax.plot(N0_e_values, tau3_values, lw = 2.5, label=r'$\Delta t_{th}$ = 4[yr]')
+    
+    #polygon = ax.fill_between( N0_e_values,  tau1_values,  tau2_values, lw=0, color='none')#color='lightgreen', alpha=0.5)
+    #verts = np.vstack([p.vertices for p in polygon.get_paths()])
+    #gradient = plt.imshow(np.linspace(0, 1, 25).reshape(-1, 1), cmap='YlGn', aspect='auto',
+    #                 extent=[verts[:, 0].min(), verts[:, 0].max(), verts[:, 1].min(), 30], alpha = 0.8)
+    #gradient.set_clip_path(polygon.get_paths()[0], transform=plt.gca().transData)
+    ax.fill_between(x=N0_e_values, y1=tau2_values, y2=100, color = 'green', alpha = 0.2, interpolate=True)
+
+    ax.set_xlim(0, max(N0_e_values))
+    ax.set_ylim(0, 110)
+
+
+    # Add labels and title
+    ax.set_ylabel(r'$\tau$')
+    ax.set_xlabel(r'$N_e(0)$')
+    #ax.set_title(r'$\Delta t_{th}$ = 60[yr]')
+
+    # Add legend
+    plt.legend(frameon=False)
+
+def plot_tau_N_dep_2gradients():
+
+    fig, ax = plt.subplots()
+    # Define the range of N(0)_e values
+    N0_e_values = np.linspace(1, 100, 300)  # Adjust the range as needed
+
+    # Calculate tau values for each N(0)_e value
+    tau1_values = 1 / np.log(N0_e_values)
+    tau2_values = 60 / np.log(N0_e_values)
+    tau3_values = 4 / np.log(N0_e_values)
+
+  
+    ax.set_yscale('log')
+
+    #for a, d in zip(np.linspace(0.001, 0.999, 100)[::-1], np.logspace(np.log10(59), np.log10(100), 100)):
+    #    tau = d / np.log(N0_e_values)
+    #    ax.plot(N0_e_values, tau, lw = 1.5, color= 'orange', alpha = a)
+
+    #for a, d in zip(np.linspace(0.001, 0.999, 100)[::-1], np.logspace(np.log10(1), np.log10(10), 100)):
+    #    tau = d / np.log(N0_e_values)
+    #    ax.plot(N0_e_values, tau, lw = 1.5, color= 'm', alpha = a)
+
+    ax.plot(N0_e_values, tau1_values, lw = 2.5, color = 'm', label=r'$\Delta t_{max}$ = 1[yr]')
+    ax.plot(N0_e_values, tau2_values, lw = 2.5, color = 'orange', ls = '--', label=r'$\Delta t_{max}$ = 60[yr]')
+    
+    ax.set_xlim(0, max(N0_e_values))
+    ax.set_ylim(0, 110)
+
+
+    # Add labels and title
+    ax.set_ylabel(r'$\tau$')
+    ax.set_xlabel(r'$N_e(0)$')
+    #ax.set_title(r'$\Delta t_{th}$ = 60[yr]')
+
+    # Add legend
+    plt.legend(frameon=False)
+
 
 
 def plot_exp_dec(tau, E0):
@@ -448,7 +551,7 @@ def plot_exp_dec(tau, E0):
     time = np.append(time, time[-1]+1)
 
     fig, ax = plt.subplots()
-    plt.annotate('$\Delta t_{th}$', xy=(t_death/2, E0-3), fontsize = 13)
+    plt.annotate('$\Delta t_{max}$', xy=(t_death/2, E0-3), fontsize = 13)
     plt.arrow(0, E0, t_death, 0,  linewidth=2,  head_width=1.05, head_length=1.03, color='k', length_includes_head=True)#t_death,
     plt.arrow(t_death, E0, -t_death, 0,  linewidth=2,  head_width=1.05, head_length=1.03, color='k', length_includes_head=True)#t_death,
 
@@ -469,7 +572,7 @@ def plot_reconstructed_sequence(t_series, E_series, events, periode, noiseLevel,
     name_fig = ''
 
     ax1.set_title('$T =$' + "{:.2f}".format(periode) +
-                  '[yr] $\sigma_{T} =$' + "{:.0f}".format(noiseLevel*100) + '%' +
+                  '[yr] $S_{T} =$' + "{:.0f}".format(noiseLevel*100) + '%' +
                   ' $N_e =$' + "{:d}".format(pop) +
                   r' $\tau =$' + "{:.1f}".format(halfLife) + '[yr]')
     #ax.plot(ts_dist_pos[1:], E_series[1:]) 
@@ -484,6 +587,9 @@ def plot_reconstructed_sequence(t_series, E_series, events, periode, noiseLevel,
     #plt.savefig(name_fig+'.svg', bbox_inches='tight')
     #plt.savefig(name_fig+'.png', bbox_inches='tight')
     #plt.savefig(name_fig+'.eps', bbox_inches='tight')
+
+
+    
     
 
 
@@ -493,14 +599,14 @@ def main():
     T = 4
     L = 1000
     L2 = 100
-    sigma = 1.5 * T
+    sigma = 1.0 * T
     noise_tolerance = 0.61
    
     Nper = int(L/T)
 
     tau = 4
 
-    E0 = 44
+    E0 = 22
     E0_max = E0
     tau_max = 25
     plot_exp_dec(tau, E0)
@@ -508,9 +614,23 @@ def main():
 
     t_death = np.log(E0) * tau
 
-    plot_tDeathMat(E0_max, tau_max)
+    #E0s = np.arange(2,E0_max, 4)
+    #taus = np.arange(1, tau_max, (tau_max)/len(E0s))
 
-    nTimes = 1222
+    E0s = np.array([ 2, 3, 6, 12, 24, 48])
+    taus = np.array([1, 2, 4, 8, 16, 32])
+
+    dropbox_dir = '/Users/au710647/Desktop/Dropbox/cultural_loss_project/embers'
+    root  = '/plots/fig_threshold_matrix/fig1_thresholdMat'
+    fig_min_width = 2.63 #inches
+    fig_height = 2.63
+    dpi = 300
+
+    plot_tDeathMat(E0s, taus, dropbox_dir  + root, 1.5*fig_min_width, 1.5*fig_height, dpi)
+    #plot_tau_N_dep()
+    #plot_tau_N_dep_2gradients()
+
+    nTimes = 111
 
     failures = countPeriodFailures( nTimes,  Nper, T, noise_tolerance, t_death) 
     print('\nmisses    ', failures/nTimes, 'Surb', 1-failures/nTimes, '\n')
@@ -520,11 +640,16 @@ def main():
     step_falses = (max_falses - min_falses)/11.
     falses_ratios = np.arange(min_falses, max_falses, step_falses)
 
-    for e in falses_ratios:
-        failures = countPeriodFailures( nTimes,  Nper, T, e, t_death) 
-        print('misses    ', e, failures/nTimes, 'Surb', 1-failures/nTimes)
+    plot_CPR_decay()
+
+    #for e in falses_ratios:
+    #    failures = countPeriodFailures( nTimes,  Nper, T, e, t_death) 
+    #    print('misses    ', e, failures/nTimes, 'Surb', 1-failures/nTimes)
+
+    
 
     '''simulated options'''
+    
     fracasos, E_series, events, t_series = countFracasos(nTimes, T, mu, sigma, Nper, L2, E0, tau)
     fracasosTemp =    countTempFracasos(nTimes, T, mu, sigma, Nper, t_death, L)
     fracasosPosTemp = countTempPositiveFracasos(nTimes, T, mu, sigma, Nper, t_death, L)
@@ -540,6 +665,7 @@ def main():
 
     plot_reconstructed_sequence(t_series, E_series, events, T, sigma/T, E0, tau)
     
+    '''
     p_surb = scipy.stats.norm(T, sigma).cdf(t_death)
     p_surb_po = scipy.stats.poisson.cdf(T, sigma)
     p_death = 1- p_surb
@@ -549,6 +675,7 @@ def main():
     cumulat_p_surb = p_surb**Nper
     #cumulat_p_death = (1-p_death)**Nper
     cumulat_p_surb_po = p_surb_po**L
+    
     #print(binomial_pmf)
     print('\nanaly norm ', 1-cumulat_p_surb, 'surb', cumulat_p_surb)
     #print('analy binom ', 1-cumulat_p_death,'Surb', cumulat_p_death)
@@ -557,7 +684,7 @@ def main():
 
 
     #fracasos_fail = create_stocastic_dependence(nTimes, false_ratio, T, L, t_death) 
-    
+    '''
 
     '''
     print('ts* = ', ts_death, 'prob death', p_death)

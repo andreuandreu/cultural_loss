@@ -9,21 +9,23 @@ import knode_decay as kd
 from matplotlib.ticker import MultipleLocator, FuncFormatter
 from matplotlib.ticker import MaxNLocator
 
-
+fig_min_width = 1.5*2.63 #inches
+fig_height = 1.5*2.63
 
 def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, var, par, analy=False):
 
     fig, ax = plt.subplots()
-    fs = 14
+    fs = 12
+    fig.set_size_inches(fig_min_width ,fig_height)
 
     analy_mat = np.load(name_mat)
 
     im = ax.pcolormesh(analy_mat,  cmap='OrRd')
+    
 
     #fig.text(0.95, 0.5, r"$N_e(1Kyr)/N_e(0)$", va="center", rotation=-90, fontsize=fs)
-    fig.text(0.95, 0.5, r"$P_s$", va="center", rotation=-90, fontsize=fs)
+    fig.text(0.95, 0.5, r"$P_s$", va="center", rotation=-90, fontsize=fs+2)
 
-    print('xxxxxxxx', valuesX)
     tagX, labelsX = nf.var_tagAndLabels(varNameX, valuesX, var, par)
     tagY, labelsY = nf.var_tagAndLabels(varNameY, valuesY, var, par)
 
@@ -32,10 +34,10 @@ def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, v
 
 
     # Format tick labels to display only one decimal place
-    ax.set_xticks(np.arange(len(valuesX)))
+    ax.set_xticks(np.arange(len(valuesX))+0.5)
     labels_of_interest = []  # [str(i) for i in xLavels]
     for i, l in enumerate(valuesX):
-        if i%5 == 2:
+        if i%4 == 0:
             #labels_of_interest = np.append(labels_of_interest, f"{l + valuesX[0]:.0f}")
             labels_of_interest = np.append(labels_of_interest, f"{l :.0f}")
         else: 
@@ -43,6 +45,12 @@ def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, v
 
     ax.set_xticklabels(labels_of_interest, fontsize=fs-1)
     #ax.set_xticklabels(xLavels, fontsize=fs-1)
+
+    t_th =  np.log(var.pop)*var.tau
+
+    Xstep = (len(valuesX))/(valuesX[-1]-valuesX[0])
+
+    plt.axvline(x= (t_th - valuesX[0]) * Xstep, lw = 1.5  )
 
     # Format tick labels to display only one decimal place and apear once every 5 values
     ax.set_yticks(np.arange(len(valuesY)))
@@ -57,7 +65,7 @@ def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, v
 
     ax.tick_params(width=0, length=0)
 
-    t_th =  np.log(var.pop)*var.tau
+    
     title = '$\Delta t_{th}$ = ' + f"{t_th:.1f}"
     ax.set_title(title)
     #x_locator = MultipleLocator(base=12)
@@ -75,15 +83,97 @@ def plot_analy_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat, v
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes('right', size='5%', pad=0.05)
-    fig.colorbar(im, cax=cax, orientation='vertical')
+    cbar = fig.colorbar(im, cax=cax, orientation='vertical')
+    cbar.ax.tick_params(labelsize=fs -2)
 
     to_modify = varNameX + '_' + varNameY
     name_fig = nf.name_survival_fig(
         to_modify, par.plots_survivalMat, var, par, analy)
 
+    plt.savefig(name_fig+'.svg', bbox_inches='tight')
+    plt.savefig(name_fig+'.png', bbox_inches='tight')
+    plt.savefig(name_fig+'.tiff', bbox_inches='tight')
+    plt.savefig(name_fig+'.eps', bbox_inches='tight')
 
 
+def plot_simAndAnaly_survival_matrix(varNameY, valuesY, varNameX, valuesX, name_mat_sim, name_mat_anal, var, par, analy=False):
 
+    #fig, (ax1, ax2) = plt.subplots(1, 2)
+    fs = 12
+
+    fig = plt.figure()
+    fig.set_size_inches(fig_min_width*2 ,fig_height)
+    
+    ax1 = plt.subplot(121) 
+    ax2 = plt.subplot(122, sharex = ax1)
+
+    sim_mat = np.load(name_mat_sim)
+    analy_mat = np.load(name_mat_anal)
+
+    im1 = ax1.pcolormesh(sim_mat,  cmap='OrRd')
+    im2 = ax2.pcolormesh(analy_mat,  cmap='OrRd')
+
+    fig.text(0.95, 0.5, r"$P_s$", va="center", rotation=-90, fontsize=fs+2)
+
+    tagX, labelsX = nf.var_tagAndLabels(varNameX, valuesX, var, par)
+    tagY, labelsY = nf.var_tagAndLabels(varNameY, valuesY, var, par)
+
+    ax1.set_ylabel(tagY, fontsize = fs)
+    ax1.set_xlabel(tagX, fontsize = fs)
+    ax2.set_xlabel(tagX, fontsize = fs)
+    ax2.set_yticks([])
+
+    # Format tick labels to display only one decimal place
+    ax1.set_xticks(np.arange(len(valuesX))+0.5)
+    labels_of_interest = []  # [str(i) for i in xLavels]
+    for i, l in enumerate(valuesX):
+        if i%4 == 0:
+            #labels_of_interest = np.append(labels_of_interest, f"{l + valuesX[0]:.0f}")
+            labels_of_interest = np.append(labels_of_interest, f"{l :.0f}")
+        else: 
+            labels_of_interest = np.append(labels_of_interest, '')
+
+    ax1.set_xticklabels(labels_of_interest, fontsize=fs-1)
+
+    t_th =  np.log(var.pop)*var.tau
+    Xstep = (len(valuesX))/(valuesX[-1]-valuesX[0])
+    ax1.axvline(x= (t_th - valuesX[0]) * Xstep, lw = 1.5  )
+    ax2.axvline(x= (t_th - valuesX[0]) * Xstep, lw = 1.5  )
+
+    # Format tick labels to display only one decimal place and apear once every 5 values
+    ax1.set_yticks(np.arange(len(valuesY)))
+    labels_of_interest = []
+    for i, l in enumerate(valuesY):
+        if i % 8 == 2:
+            labels_of_interest = np.append(
+                labels_of_interest, f"{100*(l)- valuesY[1]:.0f}")
+        else:
+            labels_of_interest = np.append(labels_of_interest, '')
+    ax1.set_yticklabels(labels_of_interest, fontsize=fs-1)
+
+    ax1.tick_params(width=0, length=0)
+    ax2.tick_params(width=0, length=0)
+
+    
+    title = '$\Delta t_{th}$ = ' + f"{t_th:.1f}"
+    fig.text(0.45, 0.9, title, fontsize=fs)
+    fig.text(0.48, 0.82, 'A', fontsize=fs+2)
+    fig.text(0.85, 0.82, 'B', fontsize=fs+2)
+  
+    divider = make_axes_locatable(ax2)
+    cax = divider.append_axes('right', size='5%', pad=0.05)
+    cbar = fig.colorbar(im2, cax=cax, orientation='vertical')
+    #cbar.fig.tick_params(labelsize=fs -2)
+
+    to_modify = varNameX + '_' + varNameY
+    name_fig = nf.name_survival_fig(
+        to_modify, par.plots_survivalMat, var, par, analy)
+    
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.03, hspace=None)
+    plt.savefig(name_fig+'.svg', bbox_inches='tight')
+    plt.savefig(name_fig+'.png', bbox_inches='tight')
+    plt.savefig(name_fig+'.tiff', bbox_inches='tight')
+    plt.savefig(name_fig+'.eps', bbox_inches='tight')
 
 def colum_multiplot_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, analy, var, par, rows=1):
 
@@ -120,6 +210,10 @@ def colum_multiplot_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNam
         name = nf.file_name_n_varValue(varNameZ, valuesZ[j], var, par)
         to_modify = varNameX + '_' + varNameY
         name_mat = nf.name_survival_ranges(to_modify, 'mat_', var, par, analy) + '.npy'
+        if 'tDeath' in varNameZ:
+            to_modify = varNameX + '_' + varNameY + 'tDeath'
+            name_mat = nf.name_survival_ranges(to_modify, 'mat_', var, par, analy) + '.npy'
+        
         analy_mat = np.load(name_mat)
         im = axs[str(j)].pcolormesh(analy_mat,  cmap='OrRd')
 
@@ -181,8 +275,10 @@ def plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par, analy=
     # ax.plot(par.vector_length *
     #        0.005/(var.periodes*par.time_step)**2)
 
-    print('nananannana', name_fig)
-    # plt.savefig(name_fig, bbox_inches='tight')
+    plt.savefig(name_fig+'.svg', bbox_inches='tight')
+    plt.savefig(name_fig+'.png', bbox_inches='tight')
+    plt.savefig(name_fig+'.tiff', bbox_inches='tight')
+    plt.savefig(name_fig+'.eps', bbox_inches='tight')
 
 
 def multiplot_NxM(rows, cols, par, var, varName, hist_bins):
@@ -331,8 +427,8 @@ def multiplot_mxn_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valu
 def multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par):
 
     # create a figure and set the size
-    cols = len(valuesZ)
-    rows = len(valuesS)
+    cols =  len(valuesZ)
+    rows =  len(valuesS)
     # row and column sharing
     f, axs = plt.subplots(len(valuesS), len(valuesZ),
                           sharex=True, sharey=True, gridspec_kw=dict(hspace=0))
@@ -349,7 +445,7 @@ def multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ
     to_modify = varNameX + '_' + varNameY
     count = 0
     # Remove ticks from both x and y axes
-
+    Xstep = (len(valuesX))/(valuesX[-1]-valuesX[0])
 
     for i in range(rows):
         name = nf.file_name_n_varValue(varNameS, valuesS[i], var, par)
@@ -357,8 +453,17 @@ def multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ
             name = nf.file_name_n_varValue(varNameZ, valuesZ[j], var, par) 
             name_mat = nf.name_survival_ranges(
                 to_modify, 'mat_', var, par, 'analy') 
+            #print('aaaaf', name_mat)
             analy_mat = np.load(name_mat+'.npy')
+
+            t_th =  np.log(var.pop)*var.tau
+            if t_th > 2 and t_th < 25:
+                axs[i,j].axvline(x= (t_th - valuesX[0]) * Xstep, lw = 1.5  )
+            #    axs[i,j].axvline(x=(t_th - valuesX[0]) * Xstep, ymin=0.05, ymax=0.95, color='b', lw = 1.5 )
+
             im = axs[i,j].pcolormesh(analy_mat,  cmap='OrRd')
+            
+
 
             if i == 0:
                 title = nf.set_title_mat(varNameX, varNameY, j, cols, var, par)
@@ -373,9 +478,10 @@ def multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ
         str(len(var.periodes)) + 'x' + str(len(var.noiseLevels))
     #name_fig = nf.name_survival_fig(
     #    'pop_periode_tau_noiseLevel', par.dropbox_dir, var, par, 'analy')
-    plt.savefig(name_fig+'.svg', bbox_inches='tight')
-    plt.savefig(name_fig+'.png', bbox_inches='tight')
-    plt.savefig(name_fig+'.eps', bbox_inches='tight')
+    plt.savefig(name_fig+'_th.svg', bbox_inches='tight')
+    plt.savefig(name_fig+'_th.png', bbox_inches='tight')
+    plt.savefig(name_fig+'_th.tiff', bbox_inches='tight')
+    plt.savefig(name_fig+'_th.eps', bbox_inches='tight')
 
 
 def multiplot_mxn_alber_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par):
@@ -424,6 +530,7 @@ def multiplot_mxn_alber_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ
     #    'pop_periode_tau_noiseLevel', par.dropbox_dir, var, par, 'alber')
     plt.savefig(name_fig+'.svg', bbox_inches='tight')
     plt.savefig(name_fig+'.png', bbox_inches='tight')
+    plt.savefig(name_fig+'.tiff', bbox_inches='tight')
     plt.savefig(name_fig+'.eps', bbox_inches='tight')
 
 

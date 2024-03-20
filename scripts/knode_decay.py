@@ -18,7 +18,7 @@ import scipy.stats
 
 
 class modelVar:
-    def __init__(self, periode, false_ratio, tau, kError, k0):
+    def __init__(self, periode, false_ratio, tau, kError, k0, tDeath):
         self.periode = periode
         self.periodes= periodes
 
@@ -36,7 +36,11 @@ class modelVar:
 
         self.kError = kError
         self.kErrors = kErrors
+
         self.k0 = k0
+
+        self.tDeath = tDeath
+        self.tDeaths = tDeaths
 
 class modelPar:
     def __init__(self, time_step, vector_length, Nrealizations):
@@ -281,13 +285,49 @@ def analy_explore_twoVar_ranges(varNameX, varRangeX, varNameY, varRangeY, var, p
             #print(var.periode, var.noiseLevel, 'dedede', cumulat_p_surb)
             survival_mat[i, j] = cumulat_p_surb
             survival_mat_alber[i, j] = 1-n_frac_alber/par.Nrealizations
-            
+    survival_mat[0, 0] = 1
+    survival_mat_alber[0, 0] = 1
     #threshold_value = 0.95
     #count_higher = np.sum(survival_mat > threshold_value)
     #print( f"Number of elements higher than {threshold_value}: {count_higher} out of {len(survival_mat.flatten())}")
     np.save(name_mat, survival_mat)
     np.save(name_mat_al, survival_mat_alber)
     return name_mat, name_mat_al
+        
+
+def analy_explore_T_sigma_forTdeath(varNameX, varRangeX, varNameY, varRangeY, var, par, ts_death):
+
+    rows = len(varRangeY)
+    cols = len(varRangeX)
+    survival_mat_analy = np.empty((rows, cols))
+    survival_mat_sim = np.empty((rows, cols))
+    to_modify = varNameX +'_'+ varNameY + '_' + 'tDeath'
+    name_mat_analy = nf.name_survival_ranges( to_modify, 'mat_', var, par,  'analy_tth') + '.npy'
+    name_mat_sim = nf.name_survival_ranges( to_modify, 'mat_', var, par, 'sim_tth') + '.npy'
+    print('\n tDeath', ts_death, '\n')
+    for i, v1 in enumerate(varRangeY):
+        if os.path.exists(name_mat_sim):
+            break
+        n = nf.file_name_n_varValue(varNameY, v1, var, par, 'analy')
+        
+        for j, v2 in enumerate(varRangeX):
+            n = nf.file_name_n_varValue(varNameX, v2, var, par, 'analy')
+            
+            p_surb = scipy.stats.norm(var.periode, var.noiseLevel*var.periode).cdf(ts_death)
+            
+            cumulat_p_surb = p_surb**(par.vector_length/var.periode)
+            n_frac_sim = an.countTempPositiveFracasos(
+                par.Nrealizations, var.periode, 0, var.noiseLevel*var.periode, par.vector_length/var.periode, ts_death, par.vector_length)
+            #print(var.periode, var.noiseLevel, 'dedede', cumulat_p_surb)
+            survival_mat_analy[i, j] = cumulat_p_surb
+            survival_mat_sim[i, j] = 1-n_frac_sim/par.Nrealizations
+    survival_mat_analy[0, 0] = 1
+    survival_mat_sim[0, 0] = 1
+    
+    print( 'nanananame_mat_analy', name_mat_analy)
+    np.save(name_mat_analy , survival_mat_analy )
+    np.save(name_mat_sim, survival_mat_sim)
+    return name_mat_analy, name_mat_sim
         
 def periodMiss_twoVar_ranges(varNameX, varRangeX, varNameY, varRangeY, var, par):
 
@@ -401,7 +441,10 @@ def analy_multiexplore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, varNa
         name = nf.file_name_n_varValue(varNameZ, e, var, par)
         analy_explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par, analy)
 
- 
+def analy_multiexplore_tDeath_range(varNameX, valuesX, varNameY, valuesY, tDeathName, valuestDeath, var, par, analy):
+    for e in valuestDeath:
+        name = nf.file_name_n_varValue(tDeathName, e, var, par)
+        analy_explore_T_sigma_forTdeath(varNameX, valuesX, varNameY, valuesY, var, par, e)
 
 def a_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par):
 
@@ -434,7 +477,7 @@ hist_bins = 18
 
 # numerical par
 time_step = 1
-Nrealizations = 1111
+Nrealizations = 333
 vector_length = int(330/time_step)
 
 # model par
@@ -447,7 +490,7 @@ dropbox_dir = '/Users/au710647/Desktop/Dropbox/cultural_loss_project/embers'
 periode = 4/time_step  # int(-time_step*np.log(kError)/tau)
 max_period = int(25/time_step)  # int(-time_step*np.log(kError)/tau)
 min_period = 2  # do never go below 1 for ressolution issues.
-step_period = (max_period - min_period)/55.
+step_period = (max_period - min_period)/50.
 periodes = np.arange(min_period, max_period, step_period)
 #print('peripperi', periodes)
 
@@ -455,7 +498,7 @@ tau = float(sys.argv[2])  # 88#np.log(2)/periode  # 0.05  #
 max_tau = (20/time_step)  # int(-time_step*np.log(kError)/tau)
 min_tau = 2   # do never go below 1 for ressolution issues.
 step_tau = (max_tau - min_tau)/5.
-taus = np.arange(min_tau, max_tau, step_tau)
+taus =  np.arange(min_tau, max_tau, step_tau)
 #print('dededededekay', taus)
 
 
@@ -471,14 +514,14 @@ kErrors = np.append(np.array([min_kError]), np.arange(
 false_ratio = 0.11
 max_falses = 0.9  # 0.6#0.66
 min_falses = 0.01
-step_falses = (max_falses - min_falses)/55.
+step_falses = (max_falses - min_falses)/50.
 falses_ratios = np.arange(min_falses, max_falses, step_falses)
 #print('falsfalsfalse', falses_ratios)
 
 noiseLevel = 0.3
 max_noises = 2.1  # 0.0002  # 0.6#0.66
 min_noises = 0.1  # 0.0001
-step_noises = (max_noises - min_noises)/55.
+step_noises = (max_noises - min_noises)/50.
 noiseLevels = np.arange(min_noises, max_noises, step_noises)
 ##print('nisnosisnoise', noiseLevels)
 
@@ -489,10 +532,17 @@ step_pop = (max_pop - min_pop)/11.
 pops = np.arange(min_pop, max_pop, step_pop)
 #print('popopopopopo', pops)
 
+tDeath = 15.1
+max_tDeath = 64
+min_tDeath = 2
+step_tDeaths = (max_pop - min_pop)/11.
+tDeaths = np.arange(min_pop, max_pop, step_pop)
+
+
 
 def main():
     ##python knode_decay.py th_pop1 11 44
-    var = modelVar(periode, false_ratio, tau, kError, k0)
+    var = modelVar(periode, false_ratio, tau, kError, k0, tDeath)
     par = modelPar(time_step, vector_length, Nrealizations)
     #plot_Period_tau_dep(var, par)
 
@@ -527,41 +577,52 @@ def main():
     #tau_values = [4, 8, 12, 16, 20]
     tau_values = [1, 2, 4, 8, 16]
     pop_values = [ 3, 6, 12, 24, 48]
+    tDeath_values = [2, 4, 8, 16, 32, 64]
 
     varNameY = 'noiseLevel'  # 'noiseLevel'#'kError'  # 'noiseLevel'#  # 'false_ratio'#
     valuesY = var.noiseLevels #var.noiseLevels  # var.kErrors  #  # var.falses_ratios#
     varNameX = 'periode'  # 'noiseLevel'  # 'periode'
     valuesX =  var.periodes#
     varNameZ = 'tau'  # 'noiseLevel'  # 'periode'
-    valuesZ = var.taus
+    valuesZ = tau_values #var.taus
     varNameS = 'pop'  
     valuesS = pop_values
     varNameM = 'false_ratio'  
     valuesM = var.falses_ratios
+    tDeathName = 'tDeath'
+    valuestDeath = var.tDeaths
 
     ''' Here to plot a matrix with failure simulation '''
     #explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par)
     #psm.plot_survival_martrix(varNameY, valuesY, varNameX, valuesX, var, par)
 
     ''' Here to plot a matrix of period misses'''
-    name_mat_perMiss = periodMiss_twoVar_ranges(varNameX, valuesX, varNameM, valuesM, var, par)
+    #name_mat_perMiss = periodMiss_twoVar_ranges(varNameX, valuesX, varNameM, valuesM, var, par)
     #psm.plot_survival_martrix(varNameM, valuesM, varNameX, valuesX, var, par)
-    psm.plot_analy_survival_matrix(
-       varNameM, valuesM, varNameX, valuesX, name_mat_perMiss, var, par, '')
+    #psm.plot_analy_survival_matrix(
+    #  varNameM, valuesM, varNameX, valuesX, name_mat_perMiss, var, par, '')
     
     ''' Here to plot a matrix with simulatiocountPeriodFailuresn and analyitical'''
     #analy = ''
     #name_mat_analy, name_mat_albert = analy_explore_twoVar_ranges(varNameX, valuesX, varNameY, valuesY, var, par, analy)
     #psm.plot_analy_survival_matrix(
     #    varNameY, valuesY, varNameX, valuesX, name_mat_albert, var, par, analy)
-    analy = 'analy'
+    #analy = 'analy'
     #psm.plot_analy_survival_matrix(
     #    varNameY, valuesY, varNameX, valuesX, name_mat_analy, var, par, analy)
+    #psm.plot_simAndAnaly_survival_matrix(
+    #    varNameY, valuesY, varNameX, valuesX, name_mat_albert, name_mat_analy,  var, par, analy)
     
     ''' Here to plot the grid of matrices with my method'''
     #multiexplore_twoVar_ranges(varNameX, valuesX,
     #                          varNameY, valuesY, varNameZ, valuesZ, var, par)
 
+    ''' Here to plot the grid of matrices with tDeath dependence'''
+    analy = 'analy'
+    analy_multiexplore_tDeath_range(varNameX, valuesX, varNameY, valuesY, tDeathName, valuestDeath, var, par, analy)
+    psm.colum_multiplot_analy_survivals(varNameY, valuesY, varNameX, valuesX, tDeathName, valuestDeath, 'analy_tth', var, par)
+    plt.show()
+    
     ''' Here to plot the grid of matrices with simulation and analyitical'''
     
     #for v in valuesS:
@@ -570,11 +631,8 @@ def main():
     #psm.colum_multiplot_analy_survivals(
     #    varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, analy, var, par)
     #psm.multiplot_mxn_analy_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
-    #psm.multiplot_mxn_alber_survivals(
-    #    varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, varNameS, valuesS, var, par)
     #psm.multiplot_survivals(varNameY, valuesY, varNameX, valuesX, varNameZ, valuesZ, var, par)
-    #multiplot_mxn_survivals(varNameY, valuesY, varNameX,
-    #                        valuesX, varNameZ, valuesZ, varNameS, valuesS)
+
 
 
     #plot_threshold_functions_preiode(var, par)
@@ -591,7 +649,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-    plt.show()
+    #plt.show()
 
 
 
